@@ -50,8 +50,6 @@ class TestCardManager(unittest.TestCase):
         card_manager = CardManager(decks=1)
         played = card_manager.play_card()
 
-        print(played)
-
         self.assertEqual(51, len(card_manager.cards))
         self.assertEqual(1, len(card_manager.played_cards))
 
@@ -59,3 +57,17 @@ class TestCardManager(unittest.TestCase):
         card_manager = CardManager(decks=0)
 
         self.assertEqual(None, card_manager.play_card())
+
+    def test_reset_cards(self):
+        card_manager = CardManager(decks=1)
+
+        played = card_manager.play_card()
+        played = card_manager.play_card()
+
+        self.assertEqual(50, len(card_manager.cards))
+        self.assertEqual(2, len(card_manager.played_cards))
+
+        card_manager.reset_cards()
+
+        self.assertEqual(52, len(card_manager.cards))
+        self.assertEqual(0, len(card_manager.played_cards))
