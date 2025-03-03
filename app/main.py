@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 
+from app.blackjack.dependencies import get_game_service
 from app.routes import router
 from app.services.game_service import GameService
 
@@ -11,8 +12,6 @@ from app.services.game_service import GameService
 async def lifespan(_app: FastAPI):
 
     print("Starting Blackjack-Battle")
-
-    GAME_SERVICE = GameService()
 
     yield
 
