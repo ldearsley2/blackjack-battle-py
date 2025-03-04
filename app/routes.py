@@ -16,5 +16,10 @@ async def connect(connection: Connection, game_service: GameService = Depends(ge
     player_id = game_service.add_player(player_url)
     return {"player_id": player_id}
 
+@router.post("/play_round")
+async def play_round(game_service: GameService = Depends(get_game_service)):
+    game_service.connection_check()
+
+
 
 
