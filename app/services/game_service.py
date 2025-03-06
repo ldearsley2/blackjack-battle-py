@@ -35,7 +35,7 @@ class GameService:
         :return:
         """
         for k, v in self.connected_players:
-            response = requests.get(v)
+            response = requests.get(f"{v}connection_check")
             if response.status_code == 200:
                 try:
                     json_data = response.json()

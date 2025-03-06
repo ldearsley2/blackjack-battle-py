@@ -8,6 +8,7 @@ router = APIRouter()
 
 @router.get("/")
 async def root():
+    print(get_game_service().connected_players)
     return {"message": "Welcome to blackjack battle!"}
 
 @router.post("/connect")
@@ -19,7 +20,7 @@ async def connect(connection: Connection, game_service: GameService = Depends(ge
 @router.post("/play_round")
 async def play_round(game_service: GameService = Depends(get_game_service)):
     game_service.connection_check()
-
+    game_service.play_round()
 
 
 

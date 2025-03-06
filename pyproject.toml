@@ -13,6 +13,7 @@ python = "^3.13"
 fastapi = "^0.115.11"
 uvicorn = "^0.34.0"
 pydantic-settings = "^2.7.1"
+requests = "^2.32.3"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
