@@ -8,7 +8,7 @@ class CardCalculator:
     def __init__(self, max_hand: int):
         self.max_hand = max_hand
 
-    def get_card_value(self, card: str) -> int:
+    def get_card_value(self, card: str) -> list[str]:
         """
         Get card value from VALUE_DICT
         """
@@ -41,10 +41,10 @@ class CardCalculator:
         values = [self.get_card_value(card) for card in hand]
 
         # Split aces into seperate array
-        for index, value in enumerate(values):
+        for value in values[:]:
             if value[0] == 1:
                 aces.append(value)
-                values.pop(index)
+                values.remove(value)
 
         # Get value of all non-ace cards
         non_ace_value = 0
@@ -52,11 +52,19 @@ class CardCalculator:
             non_ace_value += v[0]
 
         if len(aces) == 1:
-            small_val = non_ace_value + aces[0][0]
-            large_val = non_ace_value + aces[0][1]
+            small_val = non_ace_value + int(aces[0][0])
+            large_val = non_ace_value + int(aces[0][1])
             if large_val <= self.max_hand:
                 return large_val
             else:
                 return small_val
 
-        return hand_value
+        ace_sum = 0
+        for ace in aces[1:]:
+            ace_sum += ace[0]
+
+        overall = non_ace_value + ace_sum
+        if overall + int(aces[0][1]) > self.max_hand:
+            return overall + int(aces[0][0])
+        else:
+            return overall + int(aces[0][1])

@@ -33,3 +33,15 @@ class TestScoreCalculator(unittest.TestCase):
         expected = 13
         actual = self.card_calc.get_hand_value_with_ace(hand)
         self.assertEqual(expected, actual)
+
+    def test_two_ace(self):
+        hand = ["AC", "AS"]
+        expected = 12
+        actual = self.card_calc.get_hand_value_with_ace(hand)
+        self.assertEqual(expected, actual)
+
+    def test_two_ace_greater_than_max(self):
+        hand = ["AC", "5H", "AS"]
+        expected = 17
+        actual = self.card_calc.get_hand_value_with_ace(hand)
+        self.assertEqual(expected, actual)
