@@ -4,7 +4,6 @@ from app.blackjack.player import Player
 
 
 class TestPlayer(unittest.TestCase):
-
     def test_add_points(self):
         player = Player("https://www.foo.com/", 10)
         player.add_points(10)

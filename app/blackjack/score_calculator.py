@@ -1,5 +1,6 @@
 from app.blackjack.deck import VALUE_DICT
 
+
 class CardCalculator:
     """
     CardCalculator is responsible for calculating the hand value for a given hand.
@@ -31,12 +32,10 @@ class CardCalculator:
             return -1
         return hand_value
 
-
     def get_hand_value_with_ace(self, hand: list[str]) -> int:
         """
         Calculate hand value that contains aces
         """
-        hand_value = 0
         aces = []
         values = [self.get_card_value(card) for card in hand]
 
@@ -51,6 +50,7 @@ class CardCalculator:
         for v in values:
             non_ace_value += v[0]
 
+        # Handle singular ace hands
         if len(aces) == 1:
             small_val = non_ace_value + int(aces[0][0])
             large_val = non_ace_value + int(aces[0][1])

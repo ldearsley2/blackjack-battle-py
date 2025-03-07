@@ -7,9 +7,8 @@ class BlackJackGame:
     """
     BlackJackGame is responsible for maintaining game state.
     """
-    def __init__(self,
-                 card_manager: CardManager,
-                 game_service: GameService):
+
+    def __init__(self, card_manager: CardManager, game_service: GameService):
         self.card_manager: CardManager = card_manager
         self.dealer_cards: list[str] = []
         self.dealer_stop: int = 17

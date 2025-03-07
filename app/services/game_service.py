@@ -1,10 +1,12 @@
 import requests
 
+
 class GameService:
     """
     GameService SINGLETON
     Maintains connected players to current session
     """
+
     def __init__(self):
         self.connected_players: dict[int, str] = {}
 
@@ -14,7 +16,7 @@ class GameService:
         :param player_url:
         :return:
         """
-        player_id = len(self.connected_players)+1
+        player_id = len(self.connected_players) + 1
         self.connected_players[player_id] = player_url
         return player_id
 
@@ -44,8 +46,7 @@ class GameService:
                     else:
                         self.remove_player(k)
                 except ValueError:
-                    print(f"player_id not found in response")
-
+                    print("player_id not found in response")
 
 
 GAME_SERVICE = GameService()
