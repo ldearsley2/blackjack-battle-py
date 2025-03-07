@@ -36,3 +36,6 @@ class BlackJackGame:
         for p in self.players:
             for i in range(2):
                 p.add_to_hand(self.card_manager.play_card())
+
+    def play_round(self):
+        pass

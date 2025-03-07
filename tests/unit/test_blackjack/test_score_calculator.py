@@ -45,3 +45,31 @@ class TestScoreCalculator(unittest.TestCase):
         expected = 17
         actual = self.card_calc.get_hand_value_with_ace(hand)
         self.assertEqual(expected, actual)
+
+    def test_all_ace(self):
+        hand = [
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+            "AC",
+        ]
+        expected = 21
+        actual = self.card_calc.get_hand_value_with_ace(hand)
+        self.assertEqual(expected, actual)
