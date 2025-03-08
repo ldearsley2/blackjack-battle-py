@@ -31,22 +31,27 @@ class GameService:
         except KeyError:
             raise KeyError(f"Player: {player_id} is not a connected player")
 
-    def connection_check(self):
+    async def connection_check(self):
         """
         Sends connected checks to all connections, connection should return player_id
         :return:
         """
-        for k, v in self.connected_players:
-            response = requests.get(f"{v}connection_check")
+        failed = []
+        for player_id, player_url in self.connected_players.items():
+            response = requests.get(f"{player_url}/connection-check")
             if response.status_code == 200:
                 try:
                     json_data = response.json()
-                    if json_data["player_id"] == v:
+                    if json_data["player_id"] == player_id:
+                        print(f"Connection check passed for url: {player_url}")
                         continue
                     else:
-                        self.remove_player(k)
+                        failed.append(player_id)
                 except ValueError:
                     print("player_id not found in response")
+
+        for pid in failed:
+            self.remove_player(pid)
 
 
 GAME_SERVICE = GameService()

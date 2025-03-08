@@ -1,3 +1,5 @@
+import requests
+
 from app.blackjack.card_manager import CardManager
 from app.blackjack.player import Player
 from app.services.game_service import GameService
@@ -12,6 +14,7 @@ class BlackJackGame:
         self.card_manager: CardManager = card_manager
         self.dealer_cards: list[str] = []
         self.dealer_stop: int = 17
+        self.max_hand: int = 21
         self.players: list[Player] = []
         self.game_service: GameService = game_service
 
@@ -20,7 +23,7 @@ class BlackJackGame:
         Populate the game's players with those within the attached game manager
         """
         for player_id, url in self.game_service.connected_players.items():
-            self.players.append(Player(url=url, points=10))
+            self.players.append(Player(player_id=str(player_id), url=url, points=10))
 
     def dealer_add_to_hand(self):
         """
@@ -37,5 +40,21 @@ class BlackJackGame:
             for i in range(2):
                 p.add_to_hand(self.card_manager.play_card())
 
-    def play_round(self):
-        pass
+    async def play_round(self):
+        self.deal_cards()
+
+        for player in self.players:
+            json_req = {
+                "player_id": player.player_id,
+                "player_max_hand": str(self.max_hand),
+                "dealer_stop": str(self.dealer_stop),
+                "dealer_hand": self.dealer_cards,
+                "current_hand": player.hand,
+                "played_cards": self.card_manager.played_cards,
+            }
+
+            print(json_req)
+
+            response = requests.post(url=f"{player.url}/turn", json=json_req)
+
+            print(response.json)

@@ -1,0 +1,8 @@
+{
+  "player_id": "1",
+  "player_max_hand": "21",
+  "dealer_stop": "17",
+  "dealer_hand": ["10H"],
+  "current_hand": ["2H", "AC", "JH"],
+  "played_cards": ["JH", "AC", "2H", "10C", "AS", "KS"]
+}

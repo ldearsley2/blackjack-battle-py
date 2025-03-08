@@ -10,6 +10,6 @@ def get_game_service() -> GameService:
 
 
 def get_blackjack_game(
-    decks: int, game_service: GameService = Depends(get_game_service)
+    game_service: GameService = Depends(get_game_service),
 ) -> BlackJackGame:
-    return BlackJackGame(CardManager(decks=decks), game_service)
+    return BlackJackGame(CardManager(decks=1), game_service)
