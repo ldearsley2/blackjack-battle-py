@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from app.dependencies import get_game_service, get_blackjack_game
+from app.blackjack.card_manager import CardManager
+from app.dependencies import get_game_service
 from app.blackjack.game import BlackJackGame
 from app.models.connection import Connection
 from app.services.game_service import GameService
@@ -25,9 +26,10 @@ async def connect(
 
 
 @router.post("/play-round")
-async def play_round(
-    game_service: GameService = Depends(get_game_service),
-    blackjack_game: BlackJackGame = Depends(get_blackjack_game),
-):
+async def play_round(game_service: GameService = Depends(get_game_service)):
+    card_manager = CardManager(decks=1)
+    blackjack_game = BlackJackGame(card_manager=card_manager, game_service=game_service)
+
     await game_service.connection_check()
-    await blackjack_game.play_round()
+    blackjack_game.add_players()
+    blackjack_game.play_round()

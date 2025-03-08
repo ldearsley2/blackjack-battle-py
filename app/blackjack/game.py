@@ -40,7 +40,7 @@ class BlackJackGame:
             for i in range(2):
                 p.add_to_hand(self.card_manager.play_card())
 
-    async def play_round(self):
+    def play_round(self):
         self.deal_cards()
 
         for player in self.players:
@@ -52,9 +52,5 @@ class BlackJackGame:
                 "current_hand": player.hand,
                 "played_cards": self.card_manager.played_cards,
             }
-
-            print(json_req)
-
             response = requests.post(url=f"{player.url}/turn", json=json_req)
-
             print(response.json)
