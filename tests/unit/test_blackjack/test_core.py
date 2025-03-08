@@ -56,3 +56,18 @@ class TestBlackjackCore(unittest.TestCase):
             self.assertEqual(2, len(p.hand))
         self.assertEqual(47, len(self.card_manager.cards))
         self.assertEqual(5, len(self.card_manager.played_cards))
+
+    def test_create_hand_json(self):
+        player = Player(player_id="1", url="https://www.foo.com", points=10)
+        actual = self.blackjack_game.create_hand_json(player)
+
+        expected = {
+            "player_id": "1",
+            "player_max_hand": "21",
+            "dealer_stop": "17",
+            "dealer_hand": [],
+            "current_hand": [],
+            "played_cards": [],
+        }
+
+        self.assertEqual(expected, actual)

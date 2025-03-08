@@ -11,7 +11,6 @@ router = APIRouter()
 
 @router.get("/")
 async def root():
-    print(get_game_service().connected_players)
     return {"message": "Welcome to blackjack battle!"}
 
 
@@ -19,6 +18,9 @@ async def root():
 async def connect(
     connection: Connection, game_service: GameService = Depends(get_game_service)
 ):
+    """
+    Connection endpoint for blackjack players
+    """
     player_url: str = connection.url
     player_id = game_service.add_player(player_url)
     print(f"Player connected with URL: {player_url}")
@@ -27,9 +29,14 @@ async def connect(
 
 @router.post("/play-round")
 async def play_round(game_service: GameService = Depends(get_game_service)):
+    """
+    Run a full round of blackjack
+    """
     card_manager = CardManager(decks=1)
     blackjack_game = BlackJackGame(card_manager=card_manager, game_service=game_service)
 
+    # Wait for connection check
     await game_service.connection_check()
+
     blackjack_game.add_players()
     blackjack_game.play_round()

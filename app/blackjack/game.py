@@ -40,17 +40,23 @@ class BlackJackGame:
             for i in range(2):
                 p.add_to_hand(self.card_manager.play_card())
 
-    def play_round(self):
-        self.deal_cards()
+    def create_hand_json(self, player: Player):
+        """
+        Generate a hand json, contains all data needed by blackjack player to make a decision
+        """
+        hand_json = {
+            "player_id": player.player_id,
+            "player_max_hand": str(self.max_hand),
+            "dealer_stop": str(self.dealer_stop),
+            "dealer_hand": self.dealer_cards,
+            "current_hand": player.hand,
+            "played_cards": self.card_manager.played_cards,
+        }
+        return hand_json
 
-        for player in self.players:
-            json_req = {
-                "player_id": player.player_id,
-                "player_max_hand": str(self.max_hand),
-                "dealer_stop": str(self.dealer_stop),
-                "dealer_hand": self.dealer_cards,
-                "current_hand": player.hand,
-                "played_cards": self.card_manager.played_cards,
-            }
-            response = requests.post(url=f"{player.url}/turn", json=json_req)
-            print(response.json)
+    # def play_round(self):
+    #     self.deal_cards()
+    #
+    #     for player in self.players:
+    #         response = requests.post(url=f"{player.url}/turn", json=json_req)
+    #         print(response.json)
