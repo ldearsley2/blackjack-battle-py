@@ -15,7 +15,6 @@ class BlackJackGame:
         self,
         card_manager: CardManager,
         card_calc: CardCalculator,
-        game_service: GameService,
     ):
         self.card_manager: CardManager = card_manager
         self.card_calc: CardCalculator = card_calc
@@ -23,13 +22,13 @@ class BlackJackGame:
         self.dealer_stop: int = 17
         self.max_hand: int = 21
         self.players: list[Player] = []
-        self.game_service: GameService = game_service
+        self.finished_players: list[Player] = []
 
-    def add_players(self):
+    def add_players(self, game_service: GameService):
         """
-        Populate the game's players with those within the attached game manager
+        Populate the game's players with game_service's connected players
         """
-        for player_id, url in self.game_service.connected_players.items():
+        for player_id, url in game_service.connected_players.items():
             self.players.append(Player(player_id=str(player_id), url=url, points=10))
 
     def dealer_add_to_hand(self):
@@ -64,15 +63,6 @@ class BlackJackGame:
     def play_hand(self, player: Player):
         player.play_state = "Playing"
 
-        def bust_check():
-            if self.card_calc.contains_ace(player.hand):
-                hand_score = self.card_calc.get_hand_value_with_ace(player.hand)
-            else:
-                hand_score = self.card_calc.get_hand_value_no_ace(player.hand)
-
-            if self.card_calc.has_busted(hand_score):
-                player.play_state = "Busted"
-
         while player.play_state == "Playing":
             response = requests.post(
                 url=f"{player.url}/turn", json=self.create_hand_json(player)
@@ -81,7 +71,10 @@ class BlackJackGame:
 
             if action == "Hit":
                 player.hand.append(self.card_manager.play_card())
-                bust_check()
+                if self.card_calc.has_busted(
+                    self.card_calc.get_hand_value(player.hand)
+                ):
+                    player.play_state = "Busted"
 
             if action == "Stand":
                 player.play_state = "Stand"
@@ -99,8 +92,6 @@ class BlackJackGame:
                 p.play_state = "Busted"
 
     def play_round(self):
-        # TODO Refactor
-
         # Deal cards to all players and dealer
         self.deal_cards()
 
@@ -121,22 +112,29 @@ class BlackJackGame:
             self.dealer_add_to_hand()
             dealer_score = self.card_calc.get_hand_value(self.dealer_cards)
 
-            # If dealer busts, award remaining players with points
-            if dealer_score > self.max_hand:
-                for p in self.players:
-                    if p.play_state == "Busted":
-                        continue
+        # If dealer busts, award remaining players with points
+        if dealer_score > self.max_hand:
+            for p in self.players:
+                if p.play_state == "Playing":
                     p.add_points(1)
+                else:
+                    p.remove_points(1)
+                    if p.points == 0:
+                        self.finished_players.append(p)
+                        self.players.remove(p)
+        else:
+            # Bust players with less score than dealer
+            self.bust_players(self.players, dealer_score)
 
-        # Final check to see if dealer has beat any remaining player
-        self.bust_players(self.players, dealer_score)
-
-        # Award and remove points
-        for player in self.players:
-            if player.play_state == "Busted":
-                player.remove_points(1)
-            else:
-                player.add_points(1)
+            # Award and remove points
+            for p in self.players:
+                if p.play_state == "Playing":
+                    p.add_points(1)
+                else:
+                    p.remove_points(1)
+                    if p.points == 0:
+                        self.finished_players.append(p)
+                        self.players.remove(p)
 
         # Round cleanup
         for player in self.players:

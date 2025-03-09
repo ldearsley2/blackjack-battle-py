@@ -15,19 +15,17 @@ class TestBlackjackCore(unittest.TestCase):
         self.card_manager = CardManager(decks=1, shuffle_limit=20)
         self.card_calc = CardCalculator(max_hand=21)
 
-        self.blackjack_game = BlackJackGame(
-            self.card_manager, self.card_calc, self.game_service
-        )
+        self.blackjack_game = BlackJackGame(self.card_manager, self.card_calc)
 
     def test_add_player(self):
-        self.blackjack_game.add_players()
+        self.blackjack_game.add_players(self.game_service)
 
         self.assertEqual(1, len(self.blackjack_game.players))
 
     def test_players_setup(self):
         self.game_service.add_player("https://www.bar.com")
 
-        self.blackjack_game.add_players()
+        self.blackjack_game.add_players(self.game_service)
 
         for p in self.blackjack_game.players:
             self.assertIsInstance(p, Player)
@@ -41,7 +39,7 @@ class TestBlackjackCore(unittest.TestCase):
         self.assertEqual(1, len(self.blackjack_game.dealer_cards))
 
     def test_deal_cards(self):
-        self.blackjack_game.add_players()
+        self.blackjack_game.add_players(self.game_service)
         self.blackjack_game.deal_cards()
 
         self.assertEqual(1, len(self.blackjack_game.dealer_cards))
@@ -52,7 +50,7 @@ class TestBlackjackCore(unittest.TestCase):
 
     def test_deal_cards_two_player(self):
         self.game_service.add_player("https://www.bar.com")
-        self.blackjack_game.add_players()
+        self.blackjack_game.add_players(self.game_service)
         self.blackjack_game.deal_cards()
 
         self.assertEqual(1, len(self.blackjack_game.dealer_cards))
