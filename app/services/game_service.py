@@ -1,3 +1,5 @@
+import uuid
+
 import requests
 
 
@@ -8,19 +10,19 @@ class GameService:
     """
 
     def __init__(self):
-        self.connected_players: dict[int, str] = {}
+        self.connected_players: dict[str, str] = {}
 
-    def add_player(self, player_url: str) -> int:
+    def add_player(self, player_url: str) -> str:
         """
         Add player to connected_players
         :param player_url:
         :return:
         """
-        player_id = len(self.connected_players) + 1
+        player_id = str(uuid.uuid4())
         self.connected_players[player_id] = player_url
         return player_id
 
-    def remove_player(self, player_id: int):
+    def remove_player(self, player_id: str):
         """
         Remove played from connected_players
         :param player_id:
