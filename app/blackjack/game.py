@@ -88,7 +88,50 @@ class BlackJackGame:
                 break
 
     def play_round(self):
+        # TODO Refactor
+
+        # Deal cards to all players and dealer
         self.deal_cards()
 
+        # Each player plays their hand
         for player in self.players:
             self.play_hand(player)
+
+        # Dealer plays hand
+        self.dealer_cards.append(self.card_manager.play_card())
+        dealer_score = self.card_calc.get_hand_value(self.dealer_cards)
+
+        # Dealer draws one card and is over dealer stop limit
+        if dealer_score >= self.dealer_stop:
+            for player in self.players:
+                if player.play_state == "Busted":
+                    continue
+                player_score = self.card_calc.get_hand_value(player.hand)
+                if dealer_score >= player_score:
+                    player.play_state = "Busted"
+
+        # Dealer continues to draw cards until at or over dealer stop limit
+        while dealer_score < self.dealer_stop:
+            self.dealer_cards.append(self.card_manager.play_card())
+            dealer_score = self.card_calc.get_hand_value(self.dealer_cards)
+
+            # If dealer busts, award remaining players with points
+            if dealer_score > self.max_hand:
+                for p in self.players:
+                    if p.play_state == "Busted":
+                        continue
+                    p.points += 1
+
+        # Final check to see if dealer has beat any remaining player
+        for player in self.players:
+            if player.play_state == "Busted":
+                continue
+            player_score = self.card_calc.get_hand_value(player.hand)
+            if dealer_score >= player_score:
+                player.play_state = "Busted"
+
+        # Award remaining players with points
+        for player in self.players:
+            if player.play_state == "Busted":
+                continue
+            player.points += 1

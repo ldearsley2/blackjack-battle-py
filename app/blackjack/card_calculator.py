@@ -77,3 +77,10 @@ class CardCalculator:
             return overall + int(aces[0][0])
         else:
             return overall + int(aces[0][1])
+
+    def get_hand_value(self, hand: list[str]) -> int:
+        if self.contains_ace(hand):
+            score = self.get_hand_value_with_ace(hand)
+        else:
+            score = self.get_hand_value_no_ace(hand)
+        return score
