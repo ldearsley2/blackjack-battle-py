@@ -4,6 +4,7 @@ class Player:
         self.url: str = url
         self.points: int = points
         self.hand: list = []
+        self.play_state = ""
 
     def add_points(self, points: int):
         self.points += points

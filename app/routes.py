@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from app.blackjack.card_calculator import CardCalculator
 from app.blackjack.card_manager import CardManager
 from app.dependencies import get_game_service
 from app.blackjack.game import BlackJackGame
@@ -33,7 +34,10 @@ async def play_round(game_service: GameService = Depends(get_game_service)):
     Run a full round of blackjack
     """
     card_manager = CardManager(decks=1)
-    blackjack_game = BlackJackGame(card_manager=card_manager, game_service=game_service)
+    card_calc = CardCalculator(max_hand=21)
+    blackjack_game = BlackJackGame(
+        card_manager=card_manager, card_calc=card_calc, game_service=game_service
+    )
 
     # Wait for connection check
     await game_service.connection_check()

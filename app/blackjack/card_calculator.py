@@ -15,6 +15,23 @@ class CardCalculator:
         """
         return VALUE_DICT[card[:-1]]
 
+    def has_busted(self, hand_value: int) -> bool:
+        """
+        Check if given hand value exceeds the max hand
+        """
+        if hand_value > self.max_hand:
+            return True
+        return False
+
+    def contains_ace(self, hand: list[str]) -> bool:
+        """
+        Check if given hand contains an ace card
+        """
+        for card in hand:
+            if card[:1] == "A":
+                return True
+        return False
+
     def get_hand_value_no_ace(self, hand: list[str]) -> int:
         """
         Get the card value for a given hand
@@ -22,14 +39,6 @@ class CardCalculator:
         hand_value = 0
         for card in hand:
             hand_value += self.get_card_value(card)[0]
-        return hand_value
-
-    def bust_check(self, hand_value: int) -> int:
-        """
-        Check if given hand value exceeds the max hand
-        """
-        if hand_value > self.max_hand:
-            return -1
         return hand_value
 
     def get_hand_value_with_ace(self, hand: list[str]) -> int:

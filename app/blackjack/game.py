@@ -1,5 +1,6 @@
 import requests
 
+from app.blackjack.card_calculator import CardCalculator
 from app.blackjack.card_manager import CardManager
 from app.blackjack.player import Player
 from app.services.game_service import GameService
@@ -10,8 +11,14 @@ class BlackJackGame:
     BlackJackGame is responsible for maintaining game state.
     """
 
-    def __init__(self, card_manager: CardManager, game_service: GameService):
+    def __init__(
+        self,
+        card_manager: CardManager,
+        card_calc: CardCalculator,
+        game_service: GameService,
+    ):
         self.card_manager: CardManager = card_manager
+        self.card_calc: CardCalculator = card_calc
         self.dealer_cards: list[str] = []
         self.dealer_stop: int = 17
         self.max_hand: int = 21
@@ -42,7 +49,7 @@ class BlackJackGame:
 
     def create_hand_json(self, player: Player):
         """
-        Generate a hand json, contains all data needed by blackjack player to make a decision
+        Generate a hand json, contains all data needed by blackjack players to make a decision
         """
         hand_json = {
             "player_id": player.player_id,
@@ -54,9 +61,34 @@ class BlackJackGame:
         }
         return hand_json
 
-    # def play_round(self):
-    #     self.deal_cards()
-    #
-    #     for player in self.players:
-    #         response = requests.post(url=f"{player.url}/turn", json=json_req)
-    #         print(response.json)
+    def play_hand(self, player: Player):
+        player.play_state = "Playing"
+
+        def bust_check():
+            if self.card_calc.contains_ace(player.hand):
+                hand_score = self.card_calc.get_hand_value_with_ace(player.hand)
+            else:
+                hand_score = self.card_calc.get_hand_value_no_ace(player.hand)
+
+            if self.card_calc.has_busted(hand_score):
+                player.play_state = "Busted"
+
+        while player.play_state == "Playing":
+            response = requests.post(
+                url=f"{player.url}/turn", json=self.create_hand_json(player)
+            )
+            action = response.json()["action"]
+
+            if action == "Hit":
+                player.hand.append(self.card_manager.play_card())
+                bust_check()
+
+            if action == "Stand":
+                player.play_state = "Stand"
+                break
+
+    def play_round(self):
+        self.deal_cards()
+
+        for player in self.players:
+            self.play_hand(player)

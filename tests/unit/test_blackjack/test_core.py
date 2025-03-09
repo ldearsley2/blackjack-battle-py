@@ -1,5 +1,6 @@
 import unittest
 
+from app.blackjack.card_calculator import CardCalculator
 from app.blackjack.card_manager import CardManager
 from app.blackjack.game import BlackJackGame
 from app.blackjack.player import Player
@@ -12,8 +13,11 @@ class TestBlackjackCore(unittest.TestCase):
         self.game_service.add_player("https://www.foo.com")
 
         self.card_manager = CardManager(decks=1)
+        self.card_calc = CardCalculator(max_hand=21)
 
-        self.blackjack_game = BlackJackGame(self.card_manager, self.game_service)
+        self.blackjack_game = BlackJackGame(
+            self.card_manager, self.card_calc, self.game_service
+        )
 
     def test_add_player(self):
         self.blackjack_game.add_players()

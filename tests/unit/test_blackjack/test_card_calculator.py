@@ -1,6 +1,6 @@
 import unittest
 
-from app.blackjack.score_calculator import CardCalculator
+from app.blackjack.card_calculator import CardCalculator
 
 
 class TestScoreCalculator(unittest.TestCase):
@@ -73,3 +73,11 @@ class TestScoreCalculator(unittest.TestCase):
         expected = 21
         actual = self.card_calc.get_hand_value_with_ace(hand)
         self.assertEqual(expected, actual)
+
+    def test_has_ace(self):
+        hand = ["AC", "10D", "4H"]
+        self.assertTrue(self.card_calc.contains_ace(hand))
+
+    def test_has_ace_false(self):
+        hand = ["10D", "4H", "4C"]
+        self.assertFalse(self.card_calc.contains_ace(hand))
