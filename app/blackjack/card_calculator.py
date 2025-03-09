@@ -48,7 +48,7 @@ class CardCalculator:
         aces = []
         values = [self.get_card_value(card) for card in hand]
 
-        # Split aces into seperate array
+        # Split aces into separate array
         for value in values[:]:
             if value[0] == 1:
                 aces.append(value)

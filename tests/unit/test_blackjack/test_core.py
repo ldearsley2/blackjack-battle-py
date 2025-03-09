@@ -12,7 +12,7 @@ class TestBlackjackCore(unittest.TestCase):
         self.game_service = GameService()
         self.game_service.add_player("https://www.foo.com")
 
-        self.card_manager = CardManager(decks=1)
+        self.card_manager = CardManager(decks=1, shuffle_limit=20)
         self.card_calc = CardCalculator(max_hand=21)
 
         self.blackjack_game = BlackJackGame(

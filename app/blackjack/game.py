@@ -109,7 +109,7 @@ class BlackJackGame:
             self.play_hand(player)
 
         # Dealer plays hand
-        self.dealer_cards.append(self.card_manager.play_card())
+        self.dealer_add_to_hand()
         dealer_score = self.card_calc.get_hand_value(self.dealer_cards)
 
         # Dealer draws one card and is over dealer stop limit
@@ -118,7 +118,7 @@ class BlackJackGame:
 
         # Dealer continues to draw cards until at or over dealer stop limit
         while dealer_score < self.dealer_stop:
-            self.dealer_cards.append(self.card_manager.play_card())
+            self.dealer_add_to_hand()
             dealer_score = self.card_calc.get_hand_value(self.dealer_cards)
 
             # If dealer busts, award remaining players with points
@@ -126,13 +126,22 @@ class BlackJackGame:
                 for p in self.players:
                     if p.play_state == "Busted":
                         continue
-                    p.points += 1
+                    p.add_points(1)
 
         # Final check to see if dealer has beat any remaining player
         self.bust_players(self.players, dealer_score)
 
-        # Award remaining players with points
+        # Award and remove points
         for player in self.players:
             if player.play_state == "Busted":
-                continue
-            player.points += 1
+                player.remove_points(1)
+            else:
+                player.add_points(1)
+
+        # Round cleanup
+        for player in self.players:
+            player.play_state = ""
+            player.clear_hand()
+
+        self.dealer_cards = []
+        self.card_manager.shuffle_check()

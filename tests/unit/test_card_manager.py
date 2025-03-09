@@ -5,7 +5,7 @@ from app.blackjack.card_manager import CardManager
 
 class TestCardManager(unittest.TestCase):
     def test_cm_init(self):
-        card_manager = CardManager(decks=1)
+        card_manager = CardManager(decks=1, shuffle_limit=20)
 
         expected = [
             "2H",
@@ -66,7 +66,7 @@ class TestCardManager(unittest.TestCase):
         self.assertEqual(expected, card_manager.cards)
 
     def test_cm_populate_cards(self):
-        card_manager = CardManager(decks=1)
+        card_manager = CardManager(decks=1, shuffle_limit=20)
 
         expected = [
             "2H",
@@ -126,7 +126,7 @@ class TestCardManager(unittest.TestCase):
         self.assertEqual(expected, card_manager.cards)
 
     def test_populate_two_decks(self):
-        card_manager = CardManager(decks=2)
+        card_manager = CardManager(decks=2, shuffle_limit=20)
 
         expected = [
             "2H",
@@ -238,19 +238,19 @@ class TestCardManager(unittest.TestCase):
         self.assertEqual(expected, card_manager.cards)
 
     def test_play_card(self):
-        card_manager = CardManager(decks=1)
+        card_manager = CardManager(decks=1, shuffle_limit=20)
         card_manager.play_card()
 
         self.assertEqual(51, len(card_manager.cards))
         self.assertEqual(1, len(card_manager.played_cards))
 
     def test_play_card_empty_list(self):
-        card_manager = CardManager(decks=0)
+        card_manager = CardManager(decks=0, shuffle_limit=20)
 
         self.assertEqual(None, card_manager.play_card())
 
     def test_reset_cards(self):
-        card_manager = CardManager(decks=1)
+        card_manager = CardManager(decks=1, shuffle_limit=20)
 
         card_manager.play_card()
         card_manager.play_card()

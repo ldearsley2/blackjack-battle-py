@@ -3,7 +3,7 @@ from app.blackjack.deck import DECK
 
 
 class CardManager:
-    def __init__(self, decks: int):
+    def __init__(self, decks: int, shuffle_limit: int):
         """
         Maintains deck of cards
         :param decks:
@@ -11,6 +11,7 @@ class CardManager:
         self.cards: list = []
         self.played_cards: list = []
         self.decks: int = decks
+        self.shuffle_limit = shuffle_limit
         self.populate_cards()
 
     def populate_cards(self) -> None:
@@ -43,3 +44,10 @@ class CardManager:
         self.played_cards = []
         self.cards = []
         self.populate_cards()
+
+    def shuffle_check(self):
+        """
+        Reset the card manager if the amount of remaining cards is less than the shuffle limit
+        """
+        if len(self.cards) < self.shuffle_limit:
+            self.reset_cards()

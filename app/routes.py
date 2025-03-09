@@ -33,7 +33,7 @@ async def play_round(game_service: GameService = Depends(get_game_service)):
     """
     Run a full round of blackjack
     """
-    card_manager = CardManager(decks=1)
+    card_manager = CardManager(decks=1, shuffle_limit=20)
     card_calc = CardCalculator(max_hand=21)
     blackjack_game = BlackJackGame(
         card_manager=card_manager, card_calc=card_calc, game_service=game_service
