@@ -87,6 +87,17 @@ class BlackJackGame:
                 player.play_state = "Stand"
                 break
 
+    def bust_players(self, players: list[Player], dealer_score: int):
+        """
+        Find and bust players with score less than the dealers
+        """
+        for p in players:
+            if p.play_state == "Busted":
+                continue
+            player_score = self.card_calc.get_hand_value(p.hand)
+            if dealer_score >= player_score:
+                p.play_state = "Busted"
+
     def play_round(self):
         # TODO Refactor
 
@@ -103,12 +114,7 @@ class BlackJackGame:
 
         # Dealer draws one card and is over dealer stop limit
         if dealer_score >= self.dealer_stop:
-            for player in self.players:
-                if player.play_state == "Busted":
-                    continue
-                player_score = self.card_calc.get_hand_value(player.hand)
-                if dealer_score >= player_score:
-                    player.play_state = "Busted"
+            self.bust_players(self.players, dealer_score)
 
         # Dealer continues to draw cards until at or over dealer stop limit
         while dealer_score < self.dealer_stop:
@@ -123,12 +129,7 @@ class BlackJackGame:
                     p.points += 1
 
         # Final check to see if dealer has beat any remaining player
-        for player in self.players:
-            if player.play_state == "Busted":
-                continue
-            player_score = self.card_calc.get_hand_value(player.hand)
-            if dealer_score >= player_score:
-                player.play_state = "Busted"
+        self.bust_players(self.players, dealer_score)
 
         # Award remaining players with points
         for player in self.players:
