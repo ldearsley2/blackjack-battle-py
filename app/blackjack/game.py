@@ -91,13 +91,46 @@ class BlackJackGame:
             if dealer_score >= player_score:
                 p.play_state = "Busted"
 
+    def adjust_points(self):
+        """
+        Adjust each player's points based on their play_state
+        """
+        for p in self.players:
+            if p.play_state == "playing":
+                p.add_points(1)
+            else:
+                p.remove_points(1)
+                if p.points == 0:
+                    self.finished_players.append(p)
+                    self.players.remove(p)
+
+    def round_cleanup(self):
+        """
+        Reset object fields for the next round of blackjack
+        """
+        for p in self.players:
+            p.play_state = ""
+            p.clear_hand()
+        self.dealer_cards = []
+        self.card_manager.shuffle_check()
+
+    def log_current_state(self):
+        print(f"| Player_id | Hand | Status |")
+        for p in self.players:
+            print(f"| {p.player_id } | {p.hand} | {p.play_state} |")
+
+
     def play_round(self):
         # Deal cards to all players and dealer
         self.deal_cards()
 
+        self.log_current_state()
+
         # Each player plays their hand
         for player in self.players:
             self.play_hand(player)
+
+        self.log_current_state()
 
         # Dealer plays hand
         self.dealer_add_to_hand()
@@ -114,32 +147,11 @@ class BlackJackGame:
 
         # If dealer busts, award remaining players with points
         if dealer_score > self.max_hand:
-            for p in self.players:
-                if p.play_state == "Playing":
-                    p.add_points(1)
-                else:
-                    p.remove_points(1)
-                    if p.points == 0:
-                        self.finished_players.append(p)
-                        self.players.remove(p)
+            self.adjust_points()
         else:
             # Bust players with less score than dealer
             self.bust_players(self.players, dealer_score)
-
             # Award and remove points
-            for p in self.players:
-                if p.play_state == "Playing":
-                    p.add_points(1)
-                else:
-                    p.remove_points(1)
-                    if p.points == 0:
-                        self.finished_players.append(p)
-                        self.players.remove(p)
+            self.adjust_points()
 
-        # Round cleanup
-        for player in self.players:
-            player.play_state = ""
-            player.clear_hand()
-
-        self.dealer_cards = []
-        self.card_manager.shuffle_check()
+        self.round_cleanup()
