@@ -33,7 +33,7 @@ class GameService:
         except KeyError:
             raise KeyError(f"Player: {player_id} is not a connected player")
 
-    async def connection_check(self):
+    async def live_check(self):
         """
         Sends connected checks to all connections, connection should return player_id
         :return:
@@ -54,6 +54,16 @@ class GameService:
 
         for pid in failed:
             self.remove_player(pid)
+
+    def can_connect(self, check_url: str) -> bool:
+        """
+        Check the given url is not already connected to the game_service
+        """
+        for pid, url in self.connected_players.items():
+            if url == check_url:
+                return False
+        return True
+
 
 
 GAME_SERVICE = GameService()

@@ -22,10 +22,11 @@ async def connect(
     """
     Connection endpoint for blackjack players
     """
-    player_url: str = connection.url
-    player_id = game_service.add_player(player_url)
-    print(f"Player connected with URL: {player_url}")
-    return {"player_id": player_id}
+    if game_service.can_connect(connection.url):
+        player_id = game_service.add_player(connection.url)
+        return {"player_id": player_id}
+    else:
+        return {"Message": "User is already connected with given URL"}
 
 
 @router.post("/play-round")
@@ -38,7 +39,7 @@ async def play_round(game_service: GameService = Depends(get_game_service)):
     blackjack_game = BlackJackGame(card_manager=card_manager, card_calc=card_calc)
 
     # Wait for connection check
-    await game_service.connection_check()
+    await game_service.live_check()
 
     blackjack_game.add_players(game_service)
 
