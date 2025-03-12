@@ -41,7 +41,7 @@ async def play_round(game_service: GameService = Depends(get_game_service)):
     # Wait for connection check
     await game_service.live_check()
 
-    blackjack_game.add_players(game_service)
+    blackjack_game.add_players(game_service.get_players())
 
     while blackjack_game.players:
         blackjack_game.play_round()

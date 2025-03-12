@@ -43,3 +43,27 @@ class TestGameServiceRemove(unittest.TestCase):
     def test_remove_unknown_player(self):
         with self.assertRaises(KeyError):
             self.game_service.remove_player("5")
+
+    def test_can_connect(self):
+        self.game_service.connected_players = {"1": "https://www.foo.com/"}
+
+        self.assertFalse(self.game_service.can_connect("https://www.foo.com/"))
+
+    def test_can_connect_true(self):
+        self.game_service.connected_players = {"1": "https://www.foo.com/"}
+
+        self.assertTrue(self.game_service.can_connect("https://www.bar.com/"))
+
+    def test_get_players(self):
+        self.game_service.connected_players = {
+            "1": "https://www.foo.com/",
+            "2": "https://www.bar.com/",
+        }
+
+        expected = {
+            "1": "https://www.foo.com/",
+            "2": "https://www.bar.com/",
+        }
+
+        actual = self.game_service.get_players()
+        self.assertEqual(expected, actual)
