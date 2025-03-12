@@ -3,7 +3,6 @@ import requests
 from app.blackjack.card_calculator import CardCalculator
 from app.blackjack.card_manager import CardManager
 from app.blackjack.player import Player
-from app.services.game_service import GameService
 
 
 class BlackJackGame:
@@ -24,11 +23,11 @@ class BlackJackGame:
         self.players: list[Player] = []
         self.finished_players: list[Player] = []
 
-    def add_players(self, game_service: GameService):
+    def add_players(self, players_dict: dict[str, str]):
         """
         Populate the game's players with game_service's connected players
         """
-        for player_id, url in game_service.connected_players.items():
+        for player_id, url in players_dict.items():
             self.players.append(Player(player_id=str(player_id), url=url, points=10))
 
     def dealer_add_to_hand(self):
@@ -43,8 +42,10 @@ class BlackJackGame:
         """
         self.dealer_add_to_hand()
         for p in self.players:
+            p.play_state = "Playing"
             for i in range(2):
                 p.add_to_hand(self.card_manager.play_card())
+            p.hand_value = self.card_calc.get_hand_value(p.hand)
 
     def create_hand_json(self, player: Player):
         """
@@ -61,8 +62,6 @@ class BlackJackGame:
         return hand_json
 
     def play_hand(self, player: Player):
-        player.play_state = "Playing"
-
         while player.play_state == "Playing":
             response = requests.post(
                 url=f"{player.url}/turn", json=self.create_hand_json(player)
@@ -71,10 +70,9 @@ class BlackJackGame:
 
             if action == "Hit":
                 player.hand.append(self.card_manager.play_card())
-                if self.card_calc.has_busted(
-                    self.card_calc.get_hand_value(player.hand)
-                ):
-                    player.play_state = "Busted"
+                player.hand_value = self.card_calc.get_hand_value(player.hand)
+                if player.hand_value > self.max_hand:
+                    player.player_state = "Busted"
 
             if action == "Stand":
                 player.play_state = "Stand"
@@ -87,8 +85,7 @@ class BlackJackGame:
         for p in players:
             if p.play_state == "Busted":
                 continue
-            player_score = self.card_calc.get_hand_value(p.hand)
-            if dealer_score >= player_score:
+            if dealer_score >= p.hand_value:
                 p.play_state = "Busted"
 
     def adjust_points(self):
@@ -96,10 +93,14 @@ class BlackJackGame:
         Adjust each player's points based on their play_state
         """
         for p in self.players:
-            if p.play_state == "playing":
+            if not p.play_state == "Busted":
                 p.add_points(1)
+                p.play_state = "Win"
+                self.log_round_end(p)
             else:
                 p.remove_points(1)
+                p.play_state = "Loss"
+                self.log_round_end(p)
                 if p.points == 0:
                     self.finished_players.append(p)
                     self.players.remove(p)
@@ -109,16 +110,19 @@ class BlackJackGame:
         Reset object fields for the next round of blackjack
         """
         for p in self.players:
-            p.play_state = ""
+            p.play_state = "Waiting"
             p.clear_hand()
         self.dealer_cards = []
         self.card_manager.shuffle_check()
 
     def log_current_state(self):
-        print(f"| Player_id | Hand | Status |")
+        print("| Player_id | Hand | Status |")
         for p in self.players:
-            print(f"| {p.player_id } | {p.hand} | {p.play_state} |")
+            print(f"| {p.player_id} | {p.hand} | {p.play_state} |")
 
+    def log_round_end(self, player: Player):
+        print("| Player_id | Hand | Status |")
+        print(f"| {player.player_id} | {player.hand} | {player.play_state} |")
 
     def play_round(self):
         # Deal cards to all players and dealer

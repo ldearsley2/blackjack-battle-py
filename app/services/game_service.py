@@ -33,6 +33,12 @@ class GameService:
         except KeyError:
             raise KeyError(f"Player: {player_id} is not a connected player")
 
+    def get_players(self) -> dict[str, str]:
+        """
+        Return a dictionary of player_id to url
+        """
+        return self.connected_players
+
     async def live_check(self):
         """
         Sends connected checks to all connections, connection should return player_id
@@ -63,7 +69,6 @@ class GameService:
             if url == check_url:
                 return False
         return True
-
 
 
 GAME_SERVICE = GameService()
