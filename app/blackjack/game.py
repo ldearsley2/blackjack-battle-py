@@ -78,14 +78,16 @@ class BlackJackGame:
                 player.play_state = "Stand"
                 break
 
-    def bust_players(self, players: list[Player], dealer_score: int):
+    def set_players_status(self, players: list[Player], dealer_score: int):
         """
-        Find and bust players with score less than the dealers
+        Find and bust players with score less than the dealers, set status to draw if score is the same
         """
         for p in players:
             if p.play_state == "Busted":
                 continue
-            if dealer_score >= p.hand_value:
+            if dealer_score == p.hand_value:
+                p.play_state = "Drew"
+            if dealer_score > p.hand_value:
                 p.play_state = "Busted"
 
     def adjust_points(self):
@@ -93,6 +95,8 @@ class BlackJackGame:
         Adjust each player's points based on their play_state
         """
         for p in self.players:
+            if p.play_state == "Drew":
+                continue
             if not p.play_state == "Busted":
                 p.add_points(1)
                 p.play_state = "Win"
@@ -116,13 +120,13 @@ class BlackJackGame:
         self.card_manager.shuffle_check()
 
     def log_current_state(self):
-        print("| Player_id | Hand | Status |")
+        print("| Player_id | Hand | Status | Points |")
         for p in self.players:
-            print(f"| {p.player_id} | {p.hand} | {p.play_state} |")
+            print(f"| {p.player_id} | {p.hand} | {p.play_state} | {p.points} |")
 
     def log_round_end(self, player: Player):
-        print("| Player_id | Hand | Status |")
-        print(f"| {player.player_id} | {player.hand} | {player.play_state} |")
+        print("| Player_id | Hand | Status | Points |")
+        print(f"| {player.player_id} | {player.hand} | {player.play_state} | {player.points} |")
 
     def play_round(self):
         # Deal cards to all players and dealer
@@ -142,7 +146,7 @@ class BlackJackGame:
 
         # Dealer draws one card and is over dealer stop limit
         if dealer_score >= self.dealer_stop:
-            self.bust_players(self.players, dealer_score)
+            self.set_players_status(self.players, dealer_score)
 
         # Dealer continues to draw cards until at or over dealer stop limit
         while dealer_score < self.dealer_stop:
@@ -154,7 +158,7 @@ class BlackJackGame:
             self.adjust_points()
         else:
             # Bust players with less score than dealer
-            self.bust_players(self.players, dealer_score)
+            self.set_players_status(self.players, dealer_score)
             # Award and remove points
             self.adjust_points()
 
