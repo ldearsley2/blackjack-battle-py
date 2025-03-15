@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from starlette.websockets import WebSocket
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from app.blackjack.card_calculator import CardCalculator
 from app.blackjack.card_manager import CardManager
@@ -48,14 +48,30 @@ async def play_round(game_service: GameService = Depends(get_game_service),
     blackjack_game.add_players(game_service.get_players())
 
     while blackjack_game.players:
-        blackjack_game.play_round()
+        await blackjack_game.play_round()
+        await broadcast_update(state_service.get_game_state())
 
 
 # Websocket functionality
 async def broadcast_update(update: dict):
+    """
+    Send an update to all connected websockets, remove disconnected
+    """
+    remove_connections = []
+
     for connection in active_connections:
         # Insert the json object to send
-        await connection.send_json(update)
+        try:
+            await connection.send_json(update)
+            print("Sent update to FE")
+        except RuntimeError as e:
+            print("Tried to send message to disconnected connection")
+            print(e)
+            remove_connections.append(connection)
+
+    for connection in remove_connections:
+        active_connections.remove(connection)
+
 
 
 @router.websocket("/ws")
@@ -69,6 +85,14 @@ async def websocket_endpoint(websocket: WebSocket,
     active_connections.append(websocket)
     print("A new client has connect with websocket")
 
-    await websocket.send_json(state_service.get_game_state())
+    try:
+        await websocket.send_json(state_service.get_game_state())
+        while True:
+            data = await websocket.receive_text()
+            await websocket.send_text(f"Message text was: {data}")
+
+    except Exception as e:
+        print(f"Websocket error: {e}")
+
 
 
