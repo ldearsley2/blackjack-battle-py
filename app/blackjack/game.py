@@ -3,6 +3,7 @@ import requests
 from app.blackjack.card_calculator import CardCalculator
 from app.blackjack.card_manager import CardManager
 from app.blackjack.player import Player
+from app.services.state_service import StateService
 
 
 class BlackJackGame:
@@ -14,6 +15,7 @@ class BlackJackGame:
         self,
         card_manager: CardManager,
         card_calc: CardCalculator,
+        state_service: StateService,
     ):
         self.card_manager: CardManager = card_manager
         self.card_calc: CardCalculator = card_calc
@@ -22,6 +24,17 @@ class BlackJackGame:
         self.max_hand: int = 21
         self.players: list[Player] = []
         self.finished_players: list[Player] = []
+        self.state_service = state_service
+
+    def update_state_service(self):
+        """
+        Get current game state and update the state service
+        """
+        current_state = {
+            "players": self.players,
+            "dealer_hand": self.dealer_cards
+        }
+        self.state_service.set_game_state(current_state)
 
     def add_players(self, players_dict: dict[str, str]):
         """
@@ -131,14 +144,12 @@ class BlackJackGame:
     def play_round(self):
         # Deal cards to all players and dealer
         self.deal_cards()
-
-        self.log_current_state()
+        self.update_state_service()
 
         # Each player plays their hand
         for player in self.players:
             self.play_hand(player)
-
-        self.log_current_state()
+            self.update_state_service()
 
         # Dealer plays hand
         self.dealer_add_to_hand()
