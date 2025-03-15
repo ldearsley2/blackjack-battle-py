@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from starlette.websockets import WebSocket, WebSocketDisconnect
+from starlette.websockets import WebSocket
 
 from app.blackjack.card_calculator import CardCalculator
 from app.blackjack.card_manager import CardManager
@@ -33,14 +33,18 @@ async def connect(
 
 
 @router.post("/play-round")
-async def play_round(game_service: GameService = Depends(get_game_service),
-                     state_service: StateService = Depends(get_state_service)):
+async def play_round(
+    game_service: GameService = Depends(get_game_service),
+    state_service: StateService = Depends(get_state_service),
+):
     """
     Run a full round of blackjack
     """
     card_manager = CardManager(decks=1, shuffle_limit=20)
     card_calc = CardCalculator(max_hand=21)
-    blackjack_game = BlackJackGame(card_manager=card_manager, card_calc=card_calc, state_service=state_service)
+    blackjack_game = BlackJackGame(
+        card_manager=card_manager, card_calc=card_calc, state_service=state_service
+    )
 
     # Wait for connection check
     await game_service.live_check()
@@ -73,10 +77,10 @@ async def broadcast_update(update: dict):
         active_connections.remove(connection)
 
 
-
 @router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket,
-                             state_service: StateService = Depends(get_state_service)):
+async def websocket_endpoint(
+    websocket: WebSocket, state_service: StateService = Depends(get_state_service)
+):
     """
     Websocket for connected front ends, send current state of blackjack game
     """
@@ -93,6 +97,3 @@ async def websocket_endpoint(websocket: WebSocket,
 
     except Exception as e:
         print(f"Websocket error: {e}")
-
-
-

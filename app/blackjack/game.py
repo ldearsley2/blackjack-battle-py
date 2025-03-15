@@ -32,10 +32,7 @@ class BlackJackGame:
         """
         Get current game state and update the state service
         """
-        current_state = {
-            "players": [],
-            "dealer_hand": self.dealer_cards
-        }
+        current_state = {"players": [], "dealer_hand": self.dealer_cards}
         for p in self.players:
             player_state = {
                 "nickname": p.player_id,
@@ -157,7 +154,9 @@ class BlackJackGame:
 
     def log_round_end(self, player: Player):
         print("| Player_id | Hand | Status | Points |")
-        print(f"| {player.player_id} | {player.hand} | {player.play_state} | {player.points} |")
+        print(
+            f"| {player.player_id} | {player.hand} | {player.play_state} | {player.points} |"
+        )
 
     async def play_round(self):
         # Deal cards to all players and dealer

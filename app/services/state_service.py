@@ -10,4 +10,5 @@ class StateService:
     def get_game_state(self) -> dict:
         return self.game_state
 
+
 STATE_SERVICE = StateService()
