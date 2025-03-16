@@ -83,6 +83,7 @@ class BlackJackGame:
             "dealer_hand": self.dealer_cards,
             "current_hand": player.hand,
             "played_cards": self.card_manager.played_cards,
+            "deck_amount": str(self.card_manager.decks)
         }
         return hand_json
 
