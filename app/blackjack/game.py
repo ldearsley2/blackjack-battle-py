@@ -1,8 +1,11 @@
+import asyncio
+
 import requests
 
 from app.blackjack.card_calculator import CardCalculator
 from app.blackjack.card_manager import CardManager
 from app.blackjack.player import Player
+from app.services.state_service import StateService
 
 
 class BlackJackGame:
@@ -14,6 +17,7 @@ class BlackJackGame:
         self,
         card_manager: CardManager,
         card_calc: CardCalculator,
+        state_service: StateService,
     ):
         self.card_manager: CardManager = card_manager
         self.card_calc: CardCalculator = card_calc
@@ -22,6 +26,23 @@ class BlackJackGame:
         self.max_hand: int = 21
         self.players: list[Player] = []
         self.finished_players: list[Player] = []
+        self.state_service = state_service
+
+    def update_state_service(self):
+        """
+        Get current game state and update the state service
+        """
+        current_state = {"players": [], "dealer_hand": self.dealer_cards}
+        for p in self.players:
+            player_state = {
+                "nickname": p.player_id,
+                "points": p.points,
+                "hand": p.hand,
+                "play_status": p.play_state,
+            }
+            current_state["players"].append(player_state)
+
+        self.state_service.set_game_state(current_state)
 
     def add_players(self, players_dict: dict[str, str]):
         """
@@ -36,7 +57,7 @@ class BlackJackGame:
         """
         self.dealer_cards.append(self.card_manager.play_card())
 
-    def deal_cards(self):
+    async def deal_cards(self):
         """
         Starting point for a round, deal one card to dealer, two to each player.
         """
@@ -45,6 +66,10 @@ class BlackJackGame:
             p.play_state = "Playing"
             for i in range(2):
                 p.add_to_hand(self.card_manager.play_card())
+
+                self.update_state_service()
+                await asyncio.sleep(0.4)
+
             p.hand_value = self.card_calc.get_hand_value(p.hand)
 
     def create_hand_json(self, player: Player):
@@ -61,7 +86,7 @@ class BlackJackGame:
         }
         return hand_json
 
-    def play_hand(self, player: Player):
+    async def play_hand(self, player: Player):
         while player.play_state == "Playing":
             response = requests.post(
                 url=f"{player.url}/turn", json=self.create_hand_json(player)
@@ -78,14 +103,19 @@ class BlackJackGame:
                 player.play_state = "Stand"
                 break
 
-    def bust_players(self, players: list[Player], dealer_score: int):
+            self.update_state_service()
+            await asyncio.sleep(0.4)
+
+    def set_players_status(self, players: list[Player], dealer_score: int):
         """
-        Find and bust players with score less than the dealers
+        Find and bust players with score less than the dealers, set status to draw if score is the same
         """
         for p in players:
             if p.play_state == "Busted":
                 continue
-            if dealer_score >= p.hand_value:
+            if dealer_score == p.hand_value:
+                p.play_state = "Drew"
+            if dealer_score > p.hand_value:
                 p.play_state = "Busted"
 
     def adjust_points(self):
@@ -93,6 +123,8 @@ class BlackJackGame:
         Adjust each player's points based on their play_state
         """
         for p in self.players:
+            if p.play_state == "Drew":
+                continue
             if not p.play_state == "Busted":
                 p.add_points(1)
                 p.play_state = "Win"
@@ -116,45 +148,48 @@ class BlackJackGame:
         self.card_manager.shuffle_check()
 
     def log_current_state(self):
-        print("| Player_id | Hand | Status |")
+        print("| Player_id | Hand | Status | Points |")
         for p in self.players:
-            print(f"| {p.player_id} | {p.hand} | {p.play_state} |")
+            print(f"| {p.player_id} | {p.hand} | {p.play_state} | {p.points} |")
 
     def log_round_end(self, player: Player):
-        print("| Player_id | Hand | Status |")
-        print(f"| {player.player_id} | {player.hand} | {player.play_state} |")
+        print("| Player_id | Hand | Status | Points |")
+        print(
+            f"| {player.player_id} | {player.hand} | {player.play_state} | {player.points} |"
+        )
 
-    def play_round(self):
+    async def play_round(self):
         # Deal cards to all players and dealer
-        self.deal_cards()
-
-        self.log_current_state()
+        await self.deal_cards()
+        self.update_state_service()
 
         # Each player plays their hand
         for player in self.players:
-            self.play_hand(player)
-
-        self.log_current_state()
+            await self.play_hand(player)
+            self.update_state_service()
 
         # Dealer plays hand
         self.dealer_add_to_hand()
         dealer_score = self.card_calc.get_hand_value(self.dealer_cards)
+        self.update_state_service()
 
         # Dealer draws one card and is over dealer stop limit
         if dealer_score >= self.dealer_stop:
-            self.bust_players(self.players, dealer_score)
+            self.set_players_status(self.players, dealer_score)
 
         # Dealer continues to draw cards until at or over dealer stop limit
         while dealer_score < self.dealer_stop:
             self.dealer_add_to_hand()
             dealer_score = self.card_calc.get_hand_value(self.dealer_cards)
+            self.update_state_service()
+            await asyncio.sleep(0.4)
 
         # If dealer busts, award remaining players with points
         if dealer_score > self.max_hand:
             self.adjust_points()
         else:
             # Bust players with less score than dealer
-            self.bust_players(self.players, dealer_score)
+            self.set_players_status(self.players, dealer_score)
             # Award and remove points
             self.adjust_points()
 
