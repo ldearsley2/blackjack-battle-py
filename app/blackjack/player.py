@@ -1,6 +1,7 @@
 class Player:
-    def __init__(self, player_id: str, url: str, points: int):
+    def __init__(self, player_id: str, player_nickname: str, url: str, points: int):
         self.player_id: str = player_id
+        self.player_nickname: str = player_nickname
         self.url: str = url
         self.points: int = points
         self.hand: list = []

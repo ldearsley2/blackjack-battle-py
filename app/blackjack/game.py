@@ -5,6 +5,7 @@ import requests
 from app.blackjack.card_calculator import CardCalculator
 from app.blackjack.card_manager import CardManager
 from app.blackjack.player import Player
+from app.services.game_service import GSPlayer
 from app.services.state_service import StateService
 
 
@@ -35,7 +36,7 @@ class BlackJackGame:
         current_state = {"players": [], "dealer_hand": self.dealer_cards}
         for p in self.players:
             player_state = {
-                "nickname": p.player_id,
+                "nickname": p.player_nickname,
                 "points": p.points,
                 "hand": p.hand,
                 "play_status": p.play_state,
@@ -44,12 +45,12 @@ class BlackJackGame:
 
         self.state_service.set_game_state(current_state)
 
-    def add_players(self, players_dict: dict[str, str]):
+    def add_players(self, players_dict: dict[str, GSPlayer]):
         """
         Populate the game's players with game_service's connected players
         """
-        for player_id, url in players_dict.items():
-            self.players.append(Player(player_id=str(player_id), url=url, points=10))
+        for player_id, gsplayer in players_dict.items():
+            self.players.append(Player(player_id=str(player_id), player_nickname=gsplayer.player_nickname, url=gsplayer.player_url, points=10))
 
     def dealer_add_to_hand(self):
         """

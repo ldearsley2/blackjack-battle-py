@@ -24,7 +24,7 @@ async def connect(
     Connection endpoint for blackjack players
     """
     if game_service.can_connect(connection.url):
-        player_id = game_service.add_player(connection.url)
+        player_id = game_service.add_player(player_nickname=connection.nickname, player_url=connection.url)
         return {"player_id": player_id}
     else:
         return {"Message": "User is already connected with given URL"}
