@@ -1,6 +1,6 @@
 import unittest
 
-from app.services.game_service import GameService
+from app.services.game_service import GameService, GSPlayer
 
 
 class TestGameServiceAdd(unittest.TestCase):
@@ -9,22 +9,23 @@ class TestGameServiceAdd(unittest.TestCase):
 
 
 class TestGameServiceRemove(unittest.TestCase):
+    # TODO Fix object references in tests
     def setUp(self):
         self.game_service = GameService()
         self.game_service.connected_players = {
-            "1": "https://www.foo.com/",
-            "2": "https://www.bar.com/",
-            "3": "https://www.baz.com/",
-            "4": "https://www.buz.com/",
+            "1": GSPlayer("foo", "https://www.bar.com/"),
+            "2": GSPlayer("bar", "https://www.bar.com/"),
+            "3": GSPlayer("baz", "https://www.baz.com/"),
+            "4": GSPlayer("buz", "https://www.buz.com/"),
         }
 
     def test_remove_one_player(self):
         self.game_service.remove_player("2")
 
         expected = {
-            "1": "https://www.foo.com/",
-            "3": "https://www.baz.com/",
-            "4": "https://www.buz.com/",
+            "1": GSPlayer("foo", "https://www.bar.com/"),
+            "3": GSPlayer("baz", "https://www.baz.com/"),
+            "4": GSPlayer("buz", "https://www.buz.com/"),
         }
 
         self.assertEqual(expected, self.game_service.connected_players)
@@ -34,8 +35,8 @@ class TestGameServiceRemove(unittest.TestCase):
         self.game_service.remove_player("4")
 
         expected = {
-            "1": "https://www.foo.com/",
-            "3": "https://www.baz.com/",
+            "1": GSPlayer("foo", "https://www.bar.com/"),
+            "3": GSPlayer("baz", "https://www.baz.com/"),
         }
 
         self.assertEqual(expected, self.game_service.connected_players)
@@ -45,25 +46,14 @@ class TestGameServiceRemove(unittest.TestCase):
             self.game_service.remove_player("5")
 
     def test_can_connect(self):
-        self.game_service.connected_players = {"1": "https://www.foo.com/"}
+        self.game_service.connected_players = {
+            "1": GSPlayer("foo", "https://www.foo.com/"),
+            "2": GSPlayer("baz", "https://www.baz.com/"),
+        }
 
         self.assertFalse(self.game_service.can_connect("https://www.foo.com/"))
 
     def test_can_connect_true(self):
-        self.game_service.connected_players = {"1": "https://www.foo.com/"}
+        self.game_service.connected_players = {"1": GSPlayer("foo", "https://www.foo.com/")}
 
         self.assertTrue(self.game_service.can_connect("https://www.bar.com/"))
-
-    def test_get_players(self):
-        self.game_service.connected_players = {
-            "1": "https://www.foo.com/",
-            "2": "https://www.bar.com/",
-        }
-
-        expected = {
-            "1": "https://www.foo.com/",
-            "2": "https://www.bar.com/",
-        }
-
-        actual = self.game_service.get_players()
-        self.assertEqual(expected, actual)

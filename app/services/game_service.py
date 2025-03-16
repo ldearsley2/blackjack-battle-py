@@ -41,7 +41,7 @@ class GameService:
 
     def get_players(self) -> dict[str, GSPlayer]:
         """
-        Return a dictionary of player_id to url
+        Return a dictionary of player_id to GSPlayer
         """
         return self.connected_players
 
