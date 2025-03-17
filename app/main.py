@@ -4,6 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 
 from app.routes import router
+from app.sockets import socket_router
 
 
 @asynccontextmanager
@@ -17,6 +18,7 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(title="Blackjack-Battle", lifespan=lifespan)
 app.include_router(router)
+app.include_router(socket_router)
 
 
 def start():
