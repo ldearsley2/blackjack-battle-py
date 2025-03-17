@@ -22,12 +22,12 @@ class BlackJackGame:
     ):
         self.card_manager: CardManager = card_manager
         self.card_calc: CardCalculator = card_calc
+        self.state_service = state_service
         self.dealer_cards: list[str] = []
         self.dealer_stop: int = 17
         self.max_hand: int = 21
         self.players: list[Player] = []
         self.finished_players: list[Player] = []
-        self.state_service = state_service
 
     def update_state_service(self):
         """
@@ -44,6 +44,21 @@ class BlackJackGame:
             current_state["players"].append(player_state)
 
         self.state_service.set_game_state(current_state)
+
+    def create_hand_json(self, player: Player):
+        """
+        Generate a hand json, contains all data needed by blackjack players to make a decision
+        """
+        hand_json = {
+            "player_id": player.player_id,
+            "player_max_hand": str(self.max_hand),
+            "dealer_stop": str(self.dealer_stop),
+            "dealer_hand": self.dealer_cards,
+            "current_hand": player.hand,
+            "played_cards": self.card_manager.played_cards,
+            "deck_amount": str(self.card_manager.decks)
+        }
+        return hand_json
 
     def add_players(self, players_dict: dict[str, GSPlayer]):
         """
@@ -72,21 +87,6 @@ class BlackJackGame:
                 await asyncio.sleep(0.4)
 
             p.hand_value = self.card_calc.get_hand_value(p.hand)
-
-    def create_hand_json(self, player: Player):
-        """
-        Generate a hand json, contains all data needed by blackjack players to make a decision
-        """
-        hand_json = {
-            "player_id": player.player_id,
-            "player_max_hand": str(self.max_hand),
-            "dealer_stop": str(self.dealer_stop),
-            "dealer_hand": self.dealer_cards,
-            "current_hand": player.hand,
-            "played_cards": self.card_manager.played_cards,
-            "deck_amount": str(self.card_manager.decks)
-        }
-        return hand_json
 
     async def play_hand(self, player: Player):
         while player.play_state == "Playing":

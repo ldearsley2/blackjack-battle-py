@@ -1,8 +1,7 @@
 class StateService:
     def __init__(self):
-        pass
-
-        self.game_state = {}
+        self.game_state = {
+        }
 
     def set_game_state(self, state: dict):
         self.game_state = state

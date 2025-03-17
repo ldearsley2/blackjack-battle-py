@@ -64,8 +64,8 @@ class GameService:
                 except ValueError:
                     print("player_id not found in response")
 
-        for pid in failed:
-            self.remove_player(pid)
+        for player_id in failed:
+            self.remove_player(player_id)
 
     def can_connect(self, check_url: str) -> bool:
         """
