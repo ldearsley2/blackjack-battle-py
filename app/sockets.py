@@ -5,7 +5,9 @@ from app.dependencies import get_state_service
 from app.services.state_service import StateService
 
 socket_router = APIRouter()
-active_connections: list[WebSocket] = []
+fe_connections: list[WebSocket] = []
+player_connections: list[WebSocket] = []
+
 
 @socket_router.websocket("/ws")
 async def websocket_endpoint(
@@ -17,14 +19,36 @@ async def websocket_endpoint(
 
     await websocket.accept()
 
-    active_connections.append(websocket)
-    print("New client connected!")
+    fe_connections.append(websocket)
+    print("New front-end client connected!")
 
     try:
         await websocket.send_json(state_service.get_game_state())
         while True:
             data = await websocket.receive_text()
             await websocket.send_text(f"Message text was: {data}")
+
+    except Exception as e:
+        print(f"Websocket error: {e}")
+
+
+@socket_router.websocket("/connect")
+async def connect(
+        websocket: WebSocket
+):
+    """
+    Websocket for blackjack player connections
+    """
+    await websocket.accept()
+
+    player_connections.append(websocket)
+    print("New blackjack player connected")
+
+    try:
+        await websocket.send_json()
+        while True:
+            data = await websocket.receive_json()
+            print(data)
 
     except Exception as e:
         print(f"Websocket error: {e}")
