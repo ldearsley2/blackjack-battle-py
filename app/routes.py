@@ -38,10 +38,8 @@ async def play_round(
     """
     Run a full round of blackjack
     """
-    card_manager = CardManager(decks=1, shuffle_limit=20)
-    card_calc = CardCalculator(max_hand=21)
     blackjack_game = BlackJackGame(
-        card_manager=card_manager, card_calc=card_calc, state_service=state_service
+         state_service=state_service, decks=1, shuffle_limit=20, max_hand=21
     )
 
     # Wait for connection check
@@ -52,3 +50,5 @@ async def play_round(
     while blackjack_game.players:
         await blackjack_game.play_round()
         await broadcast_update(state_service.get_game_state())
+        await game_service.live_check()
+

@@ -16,12 +16,13 @@ class BlackJackGame:
 
     def __init__(
         self,
-        card_manager: CardManager,
-        card_calc: CardCalculator,
         state_service: StateService,
+        decks: int,
+        shuffle_limit: int,
+        max_hand: int,
     ):
-        self.card_manager: CardManager = card_manager
-        self.card_calc: CardCalculator = card_calc
+        self.card_manager: CardManager = CardManager(decks=decks, shuffle_limit=shuffle_limit)
+        self.card_calc: CardCalculator = CardCalculator(max_hand=max_hand)
         self.state_service = state_service
         self.dealer_cards: list[str] = []
         self.dealer_stop: int = 17
