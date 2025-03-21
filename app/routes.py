@@ -1,7 +1,5 @@
 from fastapi import APIRouter, Depends
 
-from app.blackjack.card_calculator import CardCalculator
-from app.blackjack.card_manager import CardManager
 from app.dependencies import get_game_service, get_state_service
 from app.blackjack.game import BlackJackGame
 from app.models.connection import Connection

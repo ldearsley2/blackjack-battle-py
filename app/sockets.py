@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import APIRouter, Depends
 from starlette.websockets import WebSocket
 
@@ -6,7 +8,7 @@ from app.services.state_service import StateService
 
 socket_router = APIRouter()
 fe_connections: list[WebSocket] = []
-player_connections: list[WebSocket] = []
+player_connections: dict[str, WebSocket] = {}
 
 
 @socket_router.websocket("/ws")
@@ -41,11 +43,12 @@ async def connect(
     """
     await websocket.accept()
 
-    player_connections.append(websocket)
+    player_id = str(uuid.uuid4())
+    player_connections[player_id] = websocket
     print("New blackjack player connected")
 
     try:
-        await websocket.send_json()
+        await websocket.send_json({"message": "Welcome blackjack player"})
         while True:
             data = await websocket.receive_json()
             print(data)
@@ -60,7 +63,7 @@ async def broadcast_update(update: dict):
     """
     remove_connections = []
 
-    for connection in active_connections:
+    for connection in fe_connections:
         try:
             await connection.send_json(update)
             print("Sent update to FE")
@@ -70,4 +73,4 @@ async def broadcast_update(update: dict):
             remove_connections.append(connection)
 
     for connection in remove_connections:
-        active_connections.remove(connection)
+        fe_connections.remove(connection)
