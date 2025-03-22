@@ -1,7 +1,5 @@
 from fastapi import APIRouter, Depends
 
-from app.blackjack.card_calculator import CardCalculator
-from app.blackjack.card_manager import CardManager
 from app.dependencies import get_game_service, get_state_service
 from app.blackjack.game import BlackJackGame
 from app.models.connection import Connection
@@ -42,13 +40,10 @@ async def play_round(
          state_service=state_service, decks=1, shuffle_limit=20, max_hand=21
     )
 
-    # Wait for connection check
-    await game_service.live_check()
-
     blackjack_game.add_players(game_service.get_players())
 
     while blackjack_game.players:
         await blackjack_game.play_round()
         await broadcast_update(state_service.get_game_state())
-        await game_service.live_check()
+        # await game_service.live_check()
 

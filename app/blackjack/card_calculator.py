@@ -15,14 +15,6 @@ class CardCalculator:
         """
         return VALUE_DICT[card[:-1]]
 
-    def has_busted(self, hand_value: int) -> bool:
-        """
-        Check if given hand value exceeds the max hand
-        """
-        if hand_value > self.max_hand:
-            return True
-        return False
-
     def contains_ace(self, hand: list[str]) -> bool:
         """
         Check if given hand contains an ace card

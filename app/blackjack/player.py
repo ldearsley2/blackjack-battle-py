@@ -1,8 +1,11 @@
+from starlette.websockets import WebSocket
+
+
 class Player:
-    def __init__(self, player_id: str, player_nickname: str, url: str, points: int):
+    def __init__(self, player_id: str, player_nickname: str, websocket: WebSocket, points: int):
         self.player_id: str = player_id
         self.player_nickname: str = player_nickname
-        self.url: str = url
+        self.socket: WebSocket = websocket
         self.points: int = points
         self.hand: list = []
         self.hand_value = 0

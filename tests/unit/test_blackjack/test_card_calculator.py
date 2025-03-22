@@ -21,11 +21,6 @@ class TestScoreCalculator(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
-    def test_hand_exceeds_max(self):
-        hand = ["10H", "10C", "JC"]
-        hand_value = self.card_calc.get_hand_value_no_ace(hand)
-        self.assertTrue(self.card_calc.has_busted(hand_value))
-
     def test_ace_greater_than_max(self):
         hand = ["10H", "2C", "AC"]
         expected = 13
