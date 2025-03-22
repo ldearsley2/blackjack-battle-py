@@ -1,14 +1,13 @@
-import uuid
-
 from fastapi import APIRouter, Depends
 from starlette.websockets import WebSocket
 
-from app.dependencies import get_state_service
+from app.blackjack.game import BlackJackGame
+from app.dependencies import get_state_service, get_game_service
 from app.services.state_service import StateService
 
 socket_router = APIRouter()
 fe_connections: list[WebSocket] = []
-player_connections: dict[str, WebSocket] = {}
+game_service = get_game_service()
 
 
 @socket_router.websocket("/ws")
@@ -36,25 +35,47 @@ async def websocket_endpoint(
 
 @socket_router.websocket("/connect")
 async def connect(
-        websocket: WebSocket
+        websocket: WebSocket,
 ):
     """
     Websocket for blackjack player connections
     """
     await websocket.accept()
-
-    player_id = str(uuid.uuid4())
-    player_connections[player_id] = websocket
     print("New blackjack player connected")
 
     try:
-        await websocket.send_json({"message": "Welcome blackjack player"})
         while True:
             data = await websocket.receive_json()
+
+            if data["action"] == "connect":
+                player_id = game_service.add_player(player_nickname=data["player_nickname"], player_socket=websocket)
+                await websocket.send_json({
+                    "action": "connected",
+                    "player_id": player_id
+                })
+
+            if data["action"] == "turn":
+                action, player_id = data["action"], data["player_id"]
+
             print(data)
 
     except Exception as e:
         print(f"Websocket error: {e}")
+
+
+async def send_turn(player_id: str, turn_data):
+    players = game_service.get_players()
+    websocket = players[player_id].player_socket
+    await websocket.send_json(turn_data)
+
+    try:
+        response = await websocket.receive_json()
+        action = response.get("action")
+        return action
+    except Exception as e:
+        print(f"Error receiving message: {e}")
+        return None
+
 
 
 async def broadcast_update(update: dict):

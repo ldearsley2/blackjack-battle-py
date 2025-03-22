@@ -8,3 +8,4 @@ def get_game_service() -> GameService:
 
 def get_state_service() -> StateService:
     return STATE_SERVICE
+

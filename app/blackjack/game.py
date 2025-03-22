@@ -7,6 +7,7 @@ from app.blackjack.card_manager import CardManager
 from app.blackjack.player import Player
 from app.services.game_service import GSPlayer
 from app.services.state_service import StateService
+from app.sockets import send_turn
 
 
 class BlackJackGame:
@@ -66,7 +67,7 @@ class BlackJackGame:
         Populate the game's players with game_service's connected players
         """
         for player_id, gsplayer in players_dict.items():
-            self.players.append(Player(player_id=str(player_id), player_nickname=gsplayer.player_nickname, url=gsplayer.player_url, points=10))
+            self.players.append(Player(player_id=str(player_id), player_nickname=gsplayer.player_nickname, websocket=gsplayer.player_socket, points=10))
 
     def dealer_add_to_hand(self):
         """
@@ -91,10 +92,9 @@ class BlackJackGame:
 
     async def play_hand(self, player: Player):
         while player.play_state == "Playing":
-            response = requests.post(
-                url=f"{player.url}/turn", json=self.create_hand_json(player)
-            )
-            action = response.json()["action"]
+
+            await send_turn(player_id=player.player_id, turn_data=self.create_hand_json(player))
+            action = response.get("action")
 
             if action == "Hit":
                 player.hand.append(self.card_manager.play_card())

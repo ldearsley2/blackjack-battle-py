@@ -1,11 +1,13 @@
 import uuid
 
 import requests
+from starlette.websockets import WebSocket
+
 
 class GSPlayer:
-    def __init__(self, player_nickname: str, player_url: str):
+    def __init__(self, player_nickname: str, player_socket: WebSocket):
         self.player_nickname: str = player_nickname
-        self.player_url: str = player_url
+        self.player_socket: WebSocket = player_socket
 
 
 class GameService:
@@ -17,15 +19,15 @@ class GameService:
     def __init__(self):
         self.connected_players: dict[str, GSPlayer] = {}
 
-    def add_player(self, player_nickname: str, player_url: str) -> str:
+    def add_player(self, player_nickname: str, player_socket: WebSocket) -> str:
         """
         Add player to connected_players
         :param player_nickname:
-        :param player_url:
+        :param player_socket:
         :return:
         """
         player_id = str(uuid.uuid4())
-        self.connected_players[player_id] = GSPlayer(player_nickname=player_nickname, player_url=player_url)
+        self.connected_players[player_id] = GSPlayer(player_nickname=player_nickname, player_socket=player_socket)
         return player_id
 
     def remove_player(self, player_id: str):
