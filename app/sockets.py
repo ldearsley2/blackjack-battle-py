@@ -16,9 +16,7 @@ async def websocket_endpoint(
     """
 
     await websocket.accept()
-
     active_connections.append(websocket)
-    print("New client connected!")
 
     try:
         await websocket.send_json(state_service.get_game_state())
@@ -41,7 +39,6 @@ async def broadcast_update(update: dict):
             await connection.send_json(update)
             print("Sent update to FE")
         except RuntimeError as e:
-            print("Tried to send message to disconnected connection")
             print(e)
             remove_connections.append(connection)
 

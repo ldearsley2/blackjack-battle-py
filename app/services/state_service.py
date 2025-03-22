@@ -1,4 +1,7 @@
 class StateService:
+    """
+    Maintain a game state to update front-end connections
+    """
     def __init__(self):
         self.game_state = {
         }
