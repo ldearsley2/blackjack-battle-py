@@ -3,6 +3,8 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 
+from app.blackjack.game import BlackJackGame
+from app.dependencies import get_state_service
 from app.routes import router
 from app.sockets import socket_router
 

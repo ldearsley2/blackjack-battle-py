@@ -1,8 +1,10 @@
+import uuid
+
 from fastapi import APIRouter, Depends
 from starlette.websockets import WebSocket
 
 from app.blackjack.game import BlackJackGame
-from app.dependencies import get_state_service, get_game_service
+from app.dependencies import get_state_service, get_game_service, get_blackjack_game
 from app.services.state_service import StateService
 
 socket_router = APIRouter()
@@ -36,6 +38,7 @@ async def websocket_endpoint(
 @socket_router.websocket("/connect")
 async def connect(
         websocket: WebSocket,
+        blackjack_game: BlackJackGame = Depends(get_blackjack_game)
 ):
     """
     Websocket for blackjack player connections
@@ -48,11 +51,13 @@ async def connect(
             data = await websocket.receive_json()
 
             if data["action"] == "connect":
-                player_id = game_service.add_player(player_nickname=data["player_nickname"], player_socket=websocket)
+                player_id = str(uuid.uuid4())
+                blackjack_game.add_player(player_id=player_id, player_nickname=data["player_nickname"], player_socket=websocket)
                 await websocket.send_json({
                     "action": "connected",
                     "player_id": player_id
                 })
+                print("added player")
 
             if data["action"] == "turn":
                 action, player_id = data["action"], data["player_id"]

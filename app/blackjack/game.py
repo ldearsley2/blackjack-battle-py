@@ -1,10 +1,12 @@
 import asyncio
 
 import requests
+from starlette.websockets import WebSocket
 
 from app.blackjack.card_calculator import CardCalculator
 from app.blackjack.card_manager import CardManager
 from app.blackjack.player import Player
+from app.dependencies import get_state_service
 from app.services.game_service import GSPlayer
 from app.services.state_service import StateService
 from app.sockets import send_turn
@@ -62,12 +64,9 @@ class BlackJackGame:
         }
         return hand_json
 
-    def add_players(self, players_dict: dict[str, GSPlayer]):
-        """
-        Populate the game's players with game_service's connected players
-        """
-        for player_id, gsplayer in players_dict.items():
-            self.players.append(Player(player_id=str(player_id), player_nickname=gsplayer.player_nickname, websocket=gsplayer.player_socket, points=10))
+    def add_player(self, player_id: str, player_nickname: str, player_socket: WebSocket):
+        self.players.append(Player(player_id, player_nickname, websocket=player_socket, points=10))
+        print("Blackjack game added player")
 
     def dealer_add_to_hand(self):
         """
