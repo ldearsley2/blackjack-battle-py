@@ -37,7 +37,6 @@ async def broadcast_update(update: dict):
     for connection in active_connections:
         try:
             await connection.send_json(update)
-            print("Sent update to FE")
         except RuntimeError as e:
             print(e)
             remove_connections.append(connection)
