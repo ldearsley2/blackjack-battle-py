@@ -22,6 +22,7 @@ class GameService:
         """
         Add player to connected_players
         :param player_nickname:
+        :param player_id:
         :param player_url:
         :return:
         """

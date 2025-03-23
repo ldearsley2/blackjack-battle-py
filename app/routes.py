@@ -20,22 +20,6 @@ async def root():
 
 
 @router.post("/connect")
-async def connect(
-    connection: Connection, game_service: GameService = Depends(get_game_service)
-):
-    """
-    Connection endpoint for blackjack players
-    """
-    if game_service.can_connect(connection.url):
-        player_id = game_service.add_player(
-            player_nickname=connection.nickname, player_url=connection.url
-        )
-        return {"player_id": player_id}
-    else:
-        return {"Message": "User is already connected with given URL"}
-
-
-@router.post("/manual-connect")
 async def manual_connect(game_service: GameService = Depends(get_game_service)):
     """
     Manually connect all players within env file
@@ -49,7 +33,9 @@ async def manual_connect(game_service: GameService = Depends(get_game_service)):
                 response = requests.get(
                     url=f"{url}/connect", json={"player_id": player_id}
                 )
-                if response.json()["player_id"] == player_id:
+                if response.status_code == 404:
+                    print(f"Unable to find env url: {url}")
+                elif response.status_code == 200 and response.json()["player_id"] == player_id:
                     game_service.add_player(
                         player_nickname=response.json()["nickname"], player_id=player_id, player_url=url
                     )
