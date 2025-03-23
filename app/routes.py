@@ -51,7 +51,7 @@ async def manual_connect(game_service: GameService = Depends(get_game_service)):
                 )
                 if response.json()["player_id"] == player_id:
                     game_service.add_player(
-                        player_nickname=response.json()["nickname"], player_url=url
+                        player_nickname=response.json()["nickname"], player_id=player_id, player_url=url
                     )
                 else:
                     print("Returned wrong player_id")
