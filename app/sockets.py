@@ -7,9 +7,10 @@ from app.services.state_service import StateService
 socket_router = APIRouter()
 active_connections: list[WebSocket] = []
 
+
 @socket_router.websocket("/ws")
 async def websocket_endpoint(
-        websocket: WebSocket, state_service: StateService = Depends(get_state_service)
+    websocket: WebSocket, state_service: StateService = Depends(get_state_service)
 ):
     """
     Websocket for front end connections, provides game state at connection

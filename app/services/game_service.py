@@ -2,6 +2,7 @@ import uuid
 
 import requests
 
+
 class GSPlayer:
     def __init__(self, player_nickname: str, player_url: str):
         self.player_nickname: str = player_nickname
@@ -25,7 +26,9 @@ class GameService:
         :return:
         """
         player_id = str(uuid.uuid4())
-        self.connected_players[player_id] = GSPlayer(player_nickname=player_nickname, player_url=player_url)
+        self.connected_players[player_id] = GSPlayer(
+            player_nickname=player_nickname, player_url=player_url
+        )
         return player_id
 
     def remove_player(self, player_id: str):

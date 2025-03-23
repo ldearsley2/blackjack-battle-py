@@ -21,7 +21,9 @@ class BlackJackGame:
         shuffle_limit: int,
         max_hand: int,
     ):
-        self.card_manager: CardManager = CardManager(decks=decks, shuffle_limit=shuffle_limit)
+        self.card_manager: CardManager = CardManager(
+            decks=decks, shuffle_limit=shuffle_limit
+        )
         self.card_calc: CardCalculator = CardCalculator(max_hand=max_hand)
         self.state_service = state_service
         self.dealer_cards: list[str] = []
@@ -57,7 +59,7 @@ class BlackJackGame:
             "dealer_hand": self.dealer_cards,
             "current_hand": player.hand,
             "played_cards": self.card_manager.played_cards,
-            "deck_amount": str(self.card_manager.decks)
+            "deck_amount": str(self.card_manager.decks),
         }
         return hand_json
 
@@ -66,7 +68,14 @@ class BlackJackGame:
         Populate the game's players with game_service's connected players
         """
         for player_id, gsplayer in players_dict.items():
-            self.players.append(Player(player_id=str(player_id), player_nickname=gsplayer.player_nickname, url=gsplayer.player_url, points=10))
+            self.players.append(
+                Player(
+                    player_id=str(player_id),
+                    player_nickname=gsplayer.player_nickname,
+                    url=gsplayer.player_url,
+                    points=10,
+                )
+            )
 
     def dealer_add_to_hand(self):
         """
