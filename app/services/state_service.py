@@ -5,6 +5,7 @@ class StateService:
     def __init__(self):
         self.game_state = {
         }
+        self.in_progress = False
 
     def set_game_state(self, state: dict):
         self.game_state = state

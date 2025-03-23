@@ -38,6 +38,10 @@ async def play_round(
     """
     Run a full round of blackjack
     """
+    if state_service.in_progress:
+        return {"Message": "Game already in progress"}
+
+    state_service.in_progress = True
     blackjack_game = BlackJackGame(
          state_service=state_service, decks=1, shuffle_limit=20, max_hand=21
     )
@@ -51,4 +55,6 @@ async def play_round(
         await blackjack_game.play_round()
         await broadcast_update(state_service.get_game_state())
         await game_service.live_check()
+
+    state_service.in_progress = False
 
