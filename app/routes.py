@@ -1,7 +1,10 @@
+import uuid
+from pathlib import Path
+
+import requests
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends
 
-from app.blackjack.card_calculator import CardCalculator
-from app.blackjack.card_manager import CardManager
 from app.dependencies import get_game_service, get_state_service
 from app.blackjack.game import BlackJackGame
 from app.models.connection import Connection
@@ -28,6 +31,22 @@ async def connect(
         return {"player_id": player_id}
     else:
         return {"Message": "User is already connected with given URL"}
+
+
+# TODO fix hanging
+@router.post("/manual-connect")
+async def manual_connect(game_service: GameService = Depends(get_game_service)):
+    env_path = Path(__file__).parent.parent / ".env"
+    with open(env_path, "r") as file:
+        for line in file:
+            if line.startswith("_"):
+                print(line)
+                url = line.strip().split("=")[1]
+                player_id = str(uuid.uuid4())
+                response = requests.post(url=f"{url}/connect", json={"player_id": player_id})
+                print(response.json())
+
+    return {"Message": f"User is using {project_id}"}
 
 
 @router.post("/play-round")
