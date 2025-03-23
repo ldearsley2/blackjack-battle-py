@@ -33,20 +33,22 @@ async def connect(
         return {"Message": "User is already connected with given URL"}
 
 
-# TODO fix hanging
 @router.post("/manual-connect")
 async def manual_connect(game_service: GameService = Depends(get_game_service)):
     env_path = Path(__file__).parent.parent / ".env"
     with open(env_path, "r") as file:
         for line in file:
             if line.startswith("_"):
-                print(line)
                 url = line.strip().split("=")[1]
                 player_id = str(uuid.uuid4())
-                response = requests.post(url=f"{url}/connect", json={"player_id": player_id})
-                print(response.json())
+                response = requests.get(url=f"{url}/connect", json={"player_id": player_id})
+                if response.json()["player_id"] == player_id:
+                    game_service.add_player(player_nickname=response.json()["nickname"], player_url=url)
+                else:
+                    print("Returned wrong player_id")
 
-    return {"Message": f"User is using {project_id}"}
+
+
 
 
 @router.post("/play-round")
