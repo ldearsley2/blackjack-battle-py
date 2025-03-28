@@ -53,16 +53,24 @@ class GameService:
         """
         failed = []
         for player_id, gsplayer in self.connected_players.items():
-            response = requests.get(f"{gsplayer.player_url}/connection-check")
-            if response.status_code == 200:
-                try:
-                    json_data = response.json()
-                    if json_data["player_id"] == player_id:
-                        continue
-                    else:
-                        failed.append(player_id)
-                except ValueError:
-                    print("player_id not found in response")
+
+            try:
+                response = requests.get(f"{gsplayer.player_url}/connection-check", timeout=10)
+                if response.status_code == 200:
+                    try:
+                        json_data = response.json()
+                        if json_data["player_id"] == player_id:
+                            continue
+                        else:
+                            failed.append(player_id)
+                    except ValueError:
+                        print("player_id not found in response")
+            except requests.Timeout as e:
+                print(f"{player_id} did not respond to live check")
+                failed.append(player_id)
+            except requests.ConnectionError as e:
+                print(f"{player_id} lost connection")
+                failed.append(player_id)
 
         for player_id in failed:
             self.remove_player(player_id)

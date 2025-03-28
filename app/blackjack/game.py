@@ -28,7 +28,7 @@ class BlackJackGame:
         self.state_service = state_service
         self.dealer_cards: list[str] = []
         self.dealer_stop: int = 17
-        self.max_hand: int = 21
+        self.max_hand: int = max_hand
         self.players: list[Player] = []
         self.finished_players: list[Player] = []
 
@@ -100,23 +100,36 @@ class BlackJackGame:
 
     async def play_hand(self, player: Player):
         while player.play_state == "Playing":
-            response = requests.post(
-                url=f"{player.url}/turn", json=self.create_hand_json(player)
-            )
-            action = response.json()["action"]
 
-            if action == "Hit":
-                player.hand.append(self.card_manager.play_card())
-                player.hand_value = self.card_calc.get_hand_value(player.hand)
-                if player.hand_value > self.max_hand:
-                    player.player_state = "Busted"
+            try:
+                response = requests.post(
+                    url=f"{player.url}/turn", json=self.create_hand_json(player), timeout=10
+                )
+                action = response.json()["action"]
 
-            if action == "Stand":
-                player.play_state = "Stand"
-                break
+                if action == "Hit":
+                    player.hand.append(self.card_manager.play_card())
+                    player.hand_value = self.card_calc.get_hand_value(player.hand)
+                    if player.hand_value > self.max_hand:
+                        player.player_state = "Busted"
+                if action == "Stand":
+                    player.play_state = "Stand"
+                    break
 
-            self.update_state_service()
-            await asyncio.sleep(0.4)
+                self.update_state_service()
+                await asyncio.sleep(0.4)
+
+            except requests.Timeout as e:
+                print(f"{player.player_id} did not take an action within timeout")
+                player.play_state = "Timeout"
+                self.finished_players.append(player)
+                self.players.remove(player)
+            except requests.ConnectionError as e:
+                print(f"{player.player_id} lost connection")
+                player.play_state = "Connection lost"
+                self.finished_players.append(player)
+                self.players.remove(player)
+
 
     def set_players_status(self, players: list[Player], dealer_score: int):
         """
