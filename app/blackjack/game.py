@@ -105,27 +105,31 @@ class BlackJackGame:
                 response = requests.post(
                     url=f"{player.url}/turn", json=self.create_hand_json(player), timeout=10
                 )
+                action = response.json()["action"]
+
+                if action == "Hit":
+                    player.hand.append(self.card_manager.play_card())
+                    player.hand_value = self.card_calc.get_hand_value(player.hand)
+                    if player.hand_value > self.max_hand:
+                        player.player_state = "Busted"
+                if action == "Stand":
+                    player.play_state = "Stand"
+                    break
+
+                self.update_state_service()
+                await asyncio.sleep(0.4)
+
             except requests.Timeout as e:
                 print(f"{player.player_id} did not take an action within timeout")
                 player.play_state = "Timeout"
                 self.finished_players.append(player)
                 self.players.remove(player)
-                break
+            except requests.ConnectionError as e:
+                print(f"{player.player_id} lost connection")
+                player.play_state = "Connection lost"
+                self.finished_players.append(player)
+                self.players.remove(player)
 
-            action = response.json()["action"]
-
-            if action == "Hit":
-                player.hand.append(self.card_manager.play_card())
-                player.hand_value = self.card_calc.get_hand_value(player.hand)
-                if player.hand_value > self.max_hand:
-                    player.player_state = "Busted"
-
-            if action == "Stand":
-                player.play_state = "Stand"
-                break
-
-            self.update_state_service()
-            await asyncio.sleep(0.4)
 
     def set_players_status(self, players: list[Player], dealer_score: int):
         """
