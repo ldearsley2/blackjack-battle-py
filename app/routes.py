@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends
 
 from app.dependencies import get_game_service, get_state_service
 from app.blackjack.game import BlackJackGame
-from app.models.connection import Connection
 from app.services.game_service import GameService
 from app.services.state_service import StateService
 from app.sockets import broadcast_update
@@ -35,9 +34,14 @@ async def manual_connect(game_service: GameService = Depends(get_game_service)):
                 )
                 if response.status_code == 404:
                     print(f"Unable to find env url: {url}")
-                elif response.status_code == 200 and response.json()["player_id"] == player_id:
+                elif (
+                    response.status_code == 200
+                    and response.json()["player_id"] == player_id
+                ):
                     game_service.add_player(
-                        player_nickname=response.json()["nickname"], player_id=player_id, player_url=url
+                        player_nickname=response.json()["nickname"],
+                        player_id=player_id,
+                        player_url=url,
                     )
                 else:
                     print("Returned wrong player_id")
