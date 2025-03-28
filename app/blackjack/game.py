@@ -28,7 +28,7 @@ class BlackJackGame:
         self.state_service = state_service
         self.dealer_cards: list[str] = []
         self.dealer_stop: int = 17
-        self.max_hand: int = 21
+        self.max_hand: int = max_hand
         self.players: list[Player] = []
         self.finished_players: list[Player] = []
 
