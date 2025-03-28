@@ -100,9 +100,18 @@ class BlackJackGame:
 
     async def play_hand(self, player: Player):
         while player.play_state == "Playing":
-            response = requests.post(
-                url=f"{player.url}/turn", json=self.create_hand_json(player)
-            )
+
+            try:
+                response = requests.post(
+                    url=f"{player.url}/turn", json=self.create_hand_json(player), timeout=10
+                )
+            except requests.Timeout as e:
+                print(f"{player.player_id} did not take an action within timeout")
+                player.play_state = "Timeout"
+                self.finished_players.append(player)
+                self.players.remove(player)
+                break
+
             action = response.json()["action"]
 
             if action == "Hit":

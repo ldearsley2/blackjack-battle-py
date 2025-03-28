@@ -53,7 +53,12 @@ class GameService:
         """
         failed = []
         for player_id, gsplayer in self.connected_players.items():
-            response = requests.get(f"{gsplayer.player_url}/connection-check")
+
+            try:
+                response = requests.get(f"{gsplayer.player_url}/connection-check", timeout=10)
+            except requests.Timeout as e:
+                print(f"{player_id} did not respond to live check")
+
             if response.status_code == 200:
                 try:
                     json_data = response.json()
