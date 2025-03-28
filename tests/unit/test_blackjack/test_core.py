@@ -11,13 +11,17 @@ from app.services.state_service import StateService
 class TestBlackjackCore(unittest.TestCase):
     def setUp(self):
         self.game_service = GameService()
-        self.game_service.add_player(player_nickname="Foo", player_url="https://www.foo.com")
+        self.game_service.add_player(
+            player_nickname="Foo", player_url="https://www.foo.com"
+        )
 
         self.card_manager = CardManager(decks=1, shuffle_limit=20)
         self.card_calc = CardCalculator(max_hand=21)
         self.state_service = StateService
 
-        self.blackjack_game = BlackJackGame(self.card_manager, self.card_calc, self.state_service)
+        self.blackjack_game = BlackJackGame(
+            self.card_manager, self.card_calc, self.state_service
+        )
 
     def test_add_player(self):
         self.blackjack_game.add_players(self.game_service.get_players())
@@ -62,7 +66,9 @@ class TestBlackjackCore(unittest.TestCase):
         self.assertEqual(5, len(self.card_manager.played_cards))
 
     def test_create_hand_json(self):
-        player = Player(player_id="1", url="https://www.foo.com", points=10, player_nickname="Foo")
+        player = Player(
+            player_id="1", url="https://www.foo.com", points=10, player_nickname="Foo"
+        )
         actual = self.blackjack_game.create_hand_json(player)
 
         expected = {

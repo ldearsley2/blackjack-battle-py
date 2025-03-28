@@ -54,6 +54,8 @@ class TestGameServiceRemove(unittest.TestCase):
         self.assertFalse(self.game_service.can_connect("https://www.foo.com/"))
 
     def test_can_connect_true(self):
-        self.game_service.connected_players = {"1": GSPlayer("foo", "https://www.foo.com/")}
+        self.game_service.connected_players = {
+            "1": GSPlayer("foo", "https://www.foo.com/")
+        }
 
         self.assertTrue(self.game_service.can_connect("https://www.bar.com/"))
