@@ -29,7 +29,7 @@ async def manual_connect(game_service: GameService = Depends(get_game_service)):
             if line.startswith("_"):
                 url = line.strip().split("=")[1]
                 player_id = str(uuid.uuid4())
-                response = requests.get(
+                response = requests.post(
                     url=f"{url}/connect", json={"player_id": player_id}
                 )
                 if response.status_code == 404:
@@ -66,9 +66,9 @@ async def play_round(
     # Wait for connection check
     await game_service.live_check()
 
-    blackjack_game.add_players(game_service.get_players())
+    blackjack_game.player_manager.add_players(game_service.get_players())
 
-    while blackjack_game.players:
+    while blackjack_game.player_manager.players:
         await blackjack_game.play_round()
         await broadcast_update(state_service.get_game_state())
         await game_service.live_check()

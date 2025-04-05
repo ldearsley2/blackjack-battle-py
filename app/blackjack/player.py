@@ -12,6 +12,7 @@ class PlayStates(Enum):
     TIMEOUT = "Timeout"
     CONNECTION_LOSS = "Connection lost"
 
+
 class Player:
     def __init__(self, player_id: str, player_nickname: str, url: str, points: int):
         self.player_id: str = player_id
@@ -38,7 +39,7 @@ class Player:
         self.hand = []
 
     def get_play_state(self):
-        return self.play_state
+        return self.play_state.value
 
     def set_play_state(self, state: PlayStates):
         self.play_state = state
