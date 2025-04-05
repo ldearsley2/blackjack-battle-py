@@ -4,10 +4,9 @@ import requests
 
 from app.blackjack.card_calculator import CardCalculator
 from app.blackjack.card_manager import CardManager
-from app.blackjack.player import Player
+from app.blackjack.player import Player, PlayStates
 from app.services.game_service import GSPlayer
 from app.services.state_service import StateService
-
 
 class BlackJackGame:
     """
@@ -89,7 +88,7 @@ class BlackJackGame:
         """
         self.dealer_add_to_hand()
         for p in self.players:
-            p.play_state = "Playing"
+            p.play_state = PlayStates.PLAYING
             for i in range(2):
                 p.add_to_hand(self.card_manager.play_card())
 
@@ -99,7 +98,7 @@ class BlackJackGame:
             p.hand_value = self.card_calc.get_hand_value(p.hand)
 
     async def play_hand(self, player: Player):
-        while player.play_state == "Playing":
+        while player.get_play_state() == PlayStates.PLAYING:
 
             try:
                 response = requests.post(
@@ -111,9 +110,9 @@ class BlackJackGame:
                     player.hand.append(self.card_manager.play_card())
                     player.hand_value = self.card_calc.get_hand_value(player.hand)
                     if player.hand_value > self.max_hand:
-                        player.player_state = "Busted"
+                        player.set_play_state(PlayStates.BUSTED)
                 if action == "Stand":
-                    player.play_state = "Stand"
+                    player.set_play_state(PlayStates.STAND)
                     break
 
                 self.update_state_service()
@@ -121,12 +120,12 @@ class BlackJackGame:
 
             except requests.Timeout as e:
                 print(f"{player.player_id} did not take an action within timeout")
-                player.play_state = "Timeout"
+                player.set_play_state(PlayStates.TIMEOUT)
                 self.finished_players.append(player)
                 self.players.remove(player)
             except requests.ConnectionError as e:
                 print(f"{player.player_id} lost connection")
-                player.play_state = "Connection lost"
+                player.set_play_state(PlayStates.CONNECTION_LOSS)
                 self.finished_players.append(player)
                 self.players.remove(player)
 
@@ -136,27 +135,27 @@ class BlackJackGame:
         Find and bust players with score less than the dealers, set status to draw if score is the same
         """
         for p in players:
-            if p.play_state == "Busted":
+            if p.get_play_state() == PlayStates.BUSTED:
                 continue
             if dealer_score == p.hand_value:
-                p.play_state = "Drew"
+                p.set_play_state(PlayStates.DREW)
             if dealer_score > p.hand_value:
-                p.play_state = "Busted"
+                p.set_play_state(PlayStates.BUSTED)
 
     def adjust_points(self):
         """
         Adjust each player's points based on their play_state
         """
         for p in self.players:
-            if p.play_state == "Drew":
+            if p.get_play_state() == PlayStates.DREW:
                 continue
-            if not p.play_state == "Busted":
+            if not p.get_play_state() == PlayStates.BUSTED:
                 p.add_points(1)
-                p.play_state = "Win"
+                p.set_play_state(PlayStates.WIN)
                 self.log_round_end(p)
             else:
                 p.remove_points(1)
-                p.play_state = "Loss"
+                p.set_play_state(PlayStates.LOSS)
                 self.log_round_end(p)
                 if p.points == 0:
                     self.finished_players.append(p)
@@ -167,7 +166,7 @@ class BlackJackGame:
         Reset object fields for the next round of blackjack
         """
         for p in self.players:
-            p.play_state = "Waiting"
+            p.set_play_state(PlayStates.WAITING)
             p.clear_hand()
         self.dealer_cards = []
         self.card_manager.shuffle_check()
