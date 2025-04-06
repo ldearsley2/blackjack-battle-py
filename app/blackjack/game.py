@@ -8,6 +8,7 @@ from app.blackjack.dealer import Dealer
 from app.blackjack.player import Player, PlayStates
 from app.blackjack.player_manager import PlayerManager
 from app.services.state_service import StateService
+from app.sockets import broadcast_update
 
 
 class BlackJackGame:
@@ -31,6 +32,8 @@ class BlackJackGame:
         self.dealer: Dealer = Dealer(stop_limit=dealer_stop)
         self.max_hand: int = max_hand
         self.player_manager: PlayerManager = PlayerManager()
+        self.turn_wait: float = 0.5
+        self.round_wait: float = 2.0
 
     def update_state_service(self):
         """
@@ -74,7 +77,8 @@ class BlackJackGame:
                 player.add_to_hand(self.card_manager.play_card())
 
                 self.update_state_service()
-                await asyncio.sleep(0.4)
+                await broadcast_update(self.state_service.get_game_state())
+                await asyncio.sleep(self.turn_wait)
 
             player.hand_value = self.card_calc.get_hand_value(player.hand)
 
@@ -98,7 +102,8 @@ class BlackJackGame:
                     break
 
                 self.update_state_service()
-                await asyncio.sleep(0.4)
+                await broadcast_update(self.state_service.get_game_state())
+                await asyncio.sleep(self.turn_wait)
 
             except requests.Timeout:
                 print(f"{player.player_id} did not take an action within timeout")
@@ -135,17 +140,17 @@ class BlackJackGame:
     async def play_round(self):
         # Deal cards to all players and dealer
         await self.deal_cards()
-        self.update_state_service()
 
         # Each player plays their hand
         for player in self.player_manager.players:
             await self.play_hand(player)
-            self.update_state_service()
 
         # Dealer plays hand
         self.dealer.add_to_cards(self.card_manager.play_card())
         dealer_score = self.card_calc.get_hand_value(self.dealer.get_cards())
         self.update_state_service()
+        await broadcast_update(self.state_service.get_game_state())
+        await asyncio.sleep(self.turn_wait)
 
         # Dealer draws one card and is over dealer stop limit
         if dealer_score >= self.dealer.get_stop_limit():
@@ -156,7 +161,8 @@ class BlackJackGame:
             self.dealer.add_to_cards(self.card_manager.play_card())
             dealer_score = self.card_calc.get_hand_value(self.dealer.get_cards())
             self.update_state_service()
-            await asyncio.sleep(0.4)
+            await broadcast_update(self.state_service.get_game_state())
+            await asyncio.sleep(self.turn_wait)
 
         # If dealer busts, award remaining players with points
         if dealer_score > self.max_hand:
@@ -167,4 +173,5 @@ class BlackJackGame:
             # Award and remove points
             self.player_manager.adjust_player_points()
 
+        await asyncio.sleep(self.round_wait)
         self.round_cleanup()
