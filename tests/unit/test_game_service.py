@@ -9,7 +9,6 @@ class TestGameServiceAdd(unittest.TestCase):
 
 
 class TestGameServiceRemove(unittest.TestCase):
-    # TODO Fix object references in tests
     def setUp(self):
         self.game_service = GameService()
         self.game_service.connected_players = {

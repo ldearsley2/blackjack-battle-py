@@ -6,6 +6,16 @@ class GSPlayer:
         self.player_nickname: str = player_nickname
         self.player_url: str = player_url
 
+    def __eq__(self, other):
+        if not isinstance(other, GSPlayer):
+            return False
+        return (
+            self.player_nickname == other.player_nickname
+            and self.player_url == other.player_url
+        )
+
+    def __hash__(self):
+        return hash((self.player_nickname, self.player_url))
 
 class GameService:
     """
@@ -15,6 +25,8 @@ class GameService:
 
     def __init__(self):
         self.connected_players: dict[str, GSPlayer] = {}
+
+
 
     def add_player(self, player_nickname: str, player_id: str, player_url: str) -> str:
         """
