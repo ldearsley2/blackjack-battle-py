@@ -17,6 +17,7 @@ class GSPlayer:
     def __hash__(self):
         return hash((self.player_nickname, self.player_url))
 
+
 class GameService:
     """
     GameService SINGLETON
@@ -25,8 +26,6 @@ class GameService:
 
     def __init__(self):
         self.connected_players: dict[str, GSPlayer] = {}
-
-
 
     def add_player(self, player_nickname: str, player_id: str, player_url: str) -> str:
         """
