@@ -21,7 +21,7 @@ class BlackJackGame:
         decks: int,
         shuffle_limit: int,
         max_hand: int,
-        dealer_stop: int
+        dealer_stop: int,
     ):
         self.card_manager: CardManager = CardManager(
             decks=decks, shuffle_limit=shuffle_limit
