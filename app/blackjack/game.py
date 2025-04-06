@@ -4,6 +4,7 @@ import requests
 
 from app.blackjack.card_calculator import CardCalculator
 from app.blackjack.card_manager import CardManager
+from app.blackjack.dealer import Dealer
 from app.blackjack.player import Player, PlayStates
 from app.blackjack.player_manager import PlayerManager
 from app.services.state_service import StateService
@@ -20,14 +21,14 @@ class BlackJackGame:
         decks: int,
         shuffle_limit: int,
         max_hand: int,
+        dealer_stop: int
     ):
         self.card_manager: CardManager = CardManager(
             decks=decks, shuffle_limit=shuffle_limit
         )
         self.card_calc: CardCalculator = CardCalculator(max_hand=max_hand)
         self.state_service = state_service
-        self.dealer_cards: list[str] = []
-        self.dealer_stop: int = 17
+        self.dealer: Dealer = Dealer(stop_limit=dealer_stop)
         self.max_hand: int = max_hand
         self.player_manager: PlayerManager = PlayerManager()
 
@@ -35,7 +36,7 @@ class BlackJackGame:
         """
         Get current game state and update the state service
         """
-        current_state = {"players": [], "dealer_hand": self.dealer_cards}
+        current_state = {"players": [], "dealer_hand": self.dealer.get_cards()}
         for player in self.player_manager.players:
             player_state = {
                 "nickname": player.player_nickname,
@@ -54,25 +55,19 @@ class BlackJackGame:
         hand_json = {
             "player_id": player.player_id,
             "player_max_hand": str(self.max_hand),
-            "dealer_stop": str(self.dealer_stop),
-            "dealer_hand": self.dealer_cards,
+            "dealer_stop": str(self.dealer.get_stop_limit()),
+            "dealer_hand": self.dealer.get_cards(),
             "current_hand": player.hand,
             "played_cards": self.card_manager.played_cards,
             "deck_amount": str(self.card_manager.decks),
         }
         return hand_json
 
-    def dealer_add_to_hand(self):
-        """
-        Add a card to the dealers hand
-        """
-        self.dealer_cards.append(self.card_manager.play_card())
-
     async def deal_cards(self):
         """
         Starting point for a round, deal one card to dealer, two to each player.
         """
-        self.dealer_add_to_hand()
+        self.dealer.add_to_cards(self.card_manager.play_card())
         for player in self.player_manager.players:
             player.play_state = PlayStates.PLAYING
             for i in range(2):
@@ -123,7 +118,7 @@ class BlackJackGame:
         for p in self.player_manager.players:
             p.set_play_state(PlayStates.WAITING)
             p.clear_hand()
-        self.dealer_cards = []
+        self.dealer.remove_cards()
         self.card_manager.shuffle_check()
 
     def log_current_state(self):
@@ -148,18 +143,18 @@ class BlackJackGame:
             self.update_state_service()
 
         # Dealer plays hand
-        self.dealer_add_to_hand()
-        dealer_score = self.card_calc.get_hand_value(self.dealer_cards)
+        self.dealer.add_to_cards(self.card_manager.play_card())
+        dealer_score = self.card_calc.get_hand_value(self.dealer.get_cards())
         self.update_state_service()
 
         # Dealer draws one card and is over dealer stop limit
-        if dealer_score >= self.dealer_stop:
+        if dealer_score >= self.dealer.get_stop_limit():
             self.player_manager.set_players_status(dealer_score)
 
         # Dealer continues to draw cards until at or over dealer stop limit
-        while dealer_score < self.dealer_stop:
-            self.dealer_add_to_hand()
-            dealer_score = self.card_calc.get_hand_value(self.dealer_cards)
+        while dealer_score < self.dealer.get_stop_limit():
+            self.dealer.add_to_cards(self.card_manager.play_card())
+            dealer_score = self.card_calc.get_hand_value(self.dealer.get_cards())
             self.update_state_service()
             await asyncio.sleep(0.4)
 
