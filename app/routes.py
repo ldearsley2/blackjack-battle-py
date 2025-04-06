@@ -60,7 +60,11 @@ async def play_round(
 
     state_service.in_progress = True
     blackjack_game = BlackJackGame(
-        state_service=state_service, decks=1, shuffle_limit=20, max_hand=21
+        state_service=state_service,
+        decks=1,
+        shuffle_limit=20,
+        max_hand=21,
+        dealer_stop=17,
     )
 
     # Wait for connection check
