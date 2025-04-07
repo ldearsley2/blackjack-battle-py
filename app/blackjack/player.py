@@ -60,6 +60,9 @@ class Player:
         self.play_state = state
 
     def round_reset(self):
+        """
+        Reset values for next round of blackjack
+        """
         self.set_play_state(PlayStates.WAITING)
         self.reset_bet_amount()
         self.clear_hand()
