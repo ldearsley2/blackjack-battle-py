@@ -44,6 +44,7 @@ class BlackJackGame:
             player_state = {
                 "nickname": player.player_nickname,
                 "points": player.points,
+                "bet_amount": player.get_bet_amount(),
                 "hand": player.hand,
                 "play_status": player.get_play_state(),
             }
