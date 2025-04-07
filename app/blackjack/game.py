@@ -105,12 +105,12 @@ class BlackJackGame:
             player.play_state = PlayStates.PLAYING
             for i in range(2):
                 player.add_to_hand(self.card_manager.play_card())
+                player.hand_value = self.card_calc.get_hand_value(player.hand)
 
                 self.update_state_service()
                 await broadcast_update(self.state_service.get_game_state())
                 await asyncio.sleep(self.turn_wait)
 
-            player.hand_value = self.card_calc.get_hand_value(player.hand)
 
     async def play_hand(self, player: Player):
         while player.get_play_state() == PlayStates.PLAYING.value:
