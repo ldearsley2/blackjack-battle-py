@@ -66,6 +66,34 @@ class BlackJackGame:
         }
         return hand_json
 
+    async def get_player_bet(self, player: Player):
+        """
+        Get a players bet, disqualify if bet is too large.
+        """
+        bet_json = {
+            "player_id": player.player_id,
+            "current_points": player.get_points(),
+        }
+        response = requests.post(
+            url=f"{player.url}/bet",
+            json=bet_json,
+            timeout=10
+        )
+        bet_amount = response.json()["bet_amount"]
+        if bet_amount > player.get_points():
+            player.set_play_state(PlayStates.DISQUALIFIED)
+            self.player_manager.finished_players.append(player)
+            self.player_manager.players.remove(player)
+        else:
+            player.set_bet_amount(bet_amount)
+
+    async def get_player_bets(self):
+        """
+        Get all players bets.
+        """
+        for player in self.player_manager.players:
+            await self.get_player_bet(player)
+
     async def deal_cards(self):
         """
         Starting point for a round, deal one card to dealer, two to each player.
@@ -122,22 +150,18 @@ class BlackJackGame:
         """
         for p in self.player_manager.players:
             p.set_play_state(PlayStates.WAITING)
+            p.reset_bet_amount()
             p.clear_hand()
         self.dealer.remove_cards()
         self.card_manager.shuffle_check()
 
-    def log_current_state(self):
-        print("| Player_id | Hand | Status | Points |")
-        for p in self.player_manager.players:
-            print(f"| {p.player_id} | {p.hand} | {p.play_state} | {p.points} |")
-
-    def log_round_end(self, player: Player):
-        print("| Player_id | Hand | Status | Points |")
-        print(
-            f"| {player.player_id} | {player.hand} | {player.play_state} | {player.points} |"
-        )
-
     async def play_round(self):
+        """
+        Play a full round of blackjack
+        """
+        # Get bet amounts
+        await self.get_player_bets()
+
         # Deal cards to all players and dealer
         await self.deal_cards()
 

@@ -41,11 +41,10 @@ class PlayerManager:
             if player.get_play_state() == PlayStates.DREW.value:
                 continue
             if not player.get_play_state() == PlayStates.BUSTED.value:
-                player.add_points(1)
+                player.add_points(player.get_bet_amount())
                 player.set_play_state(PlayStates.WIN)
             else:
-                player.remove_points(1)
                 player.set_play_state(PlayStates.LOSS)
-                if player.points == 0:
+                if player.points <= 0:
                     self.finished_players.append(player)
                     self.players.remove(player)
