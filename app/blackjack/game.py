@@ -150,10 +150,8 @@ class BlackJackGame:
         """
         Reset object fields for the next round of blackjack
         """
-        for p in self.player_manager.players:
-            p.set_play_state(PlayStates.WAITING)
-            p.reset_bet_amount()
-            p.clear_hand()
+        for player in self.player_manager.players:
+            player.round_reset()
         self.dealer.remove_cards()
         self.card_manager.shuffle_check()
 

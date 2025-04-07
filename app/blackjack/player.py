@@ -58,3 +58,9 @@ class Player:
 
     def set_play_state(self, state: PlayStates):
         self.play_state = state
+
+    def round_reset(self):
+        self.set_play_state(PlayStates.WAITING)
+        self.reset_bet_amount()
+        self.clear_hand()
+        self.hand_value = 0
