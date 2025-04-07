@@ -46,6 +46,7 @@ class BlackJackGame:
                 "points": player.points,
                 "bet_amount": player.get_bet_amount(),
                 "hand": player.hand,
+                "hand_total": player.hand_value,
                 "play_status": player.get_play_state(),
             }
             current_state["players"].append(player_state)
