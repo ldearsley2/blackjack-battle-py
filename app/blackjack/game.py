@@ -74,18 +74,22 @@ class BlackJackGame:
             "player_id": player.player_id,
             "current_points": player.get_points(),
         }
-        response = requests.post(
-            url=f"{player.url}/bet",
-            json=bet_json,
-            timeout=10
-        )
-        bet_amount = response.json()["bet_amount"]
-        if bet_amount > player.get_points():
-            player.set_play_state(PlayStates.DISQUALIFIED)
-            self.player_manager.finished_players.append(player)
-            self.player_manager.players.remove(player)
-        else:
-            player.set_bet_amount(bet_amount)
+        try:
+            response = requests.post(
+                url=f"{player.url}/bet",
+                json=bet_json,
+                timeout=10
+            )
+            bet_amount = response.json()["bet_amount"]
+            if bet_amount > player.get_points():
+                player.set_play_state(PlayStates.DISQUALIFIED)
+                self.player_manager.finished_players.append(player)
+                self.player_manager.players.remove(player)
+            else:
+                player.set_bet_amount(bet_amount)
+
+        except Exception as e:
+            print(e)
 
     async def get_player_bets(self):
         """
