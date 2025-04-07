@@ -1,7 +1,7 @@
 from app.blackjack.player import Player
 
-class BlackjackLogger:
 
+class BlackjackLogger:
     def log_current_state(self, players: list[Player]):
         print("| Player_id | Hand | Status | Points |")
         for p in players:
@@ -12,4 +12,3 @@ class BlackjackLogger:
         print(
             f"| {player.player_id} | {player.hand} | {player.play_state} | {player.points} |"
         )
-

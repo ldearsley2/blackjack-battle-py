@@ -75,11 +75,7 @@ class BlackJackGame:
             "current_points": player.get_points(),
         }
         try:
-            response = requests.post(
-                url=f"{player.url}/bet",
-                json=bet_json,
-                timeout=10
-            )
+            response = requests.post(url=f"{player.url}/bet", json=bet_json, timeout=10)
             bet_amount = response.json()["bet_amount"]
             if bet_amount > player.get_points():
                 player.set_play_state(PlayStates.DISQUALIFIED)
